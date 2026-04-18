@@ -24,7 +24,7 @@ class RAGConfig:
     ensemble_method: str = "rrf"
     rrf_k: int  = 60
     ranker_weights: Dict[str, float] = field(
-        default_factory=lambda: {"faiss": 1.0, "bm25": 0.0, "index_keywords": 0.0}
+        default_factory=lambda: {"faiss": 0.7, "bm25": 0.0, "index_keywords": 0.0, "kg": 0.3}
     )
     rerank_mode: str = ""
     rerank_top_k: int = 5

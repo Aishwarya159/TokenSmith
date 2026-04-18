@@ -21,11 +21,12 @@ from src.embedder import CachedEmbedder
 
 from src.config import RAGConfig
 from src.index_builder import preprocess_for_bm25
-
+import spacy
 
 # -------------------------- Embedder cache ------------------------------
 
 _EMBED_CACHE: Dict[str, CachedEmbedder] = {}
+nlp = spacy.load("en_core_web_sm")
 
 def _get_embedder(model_name: str) -> CachedEmbedder:
     if model_name not in _EMBED_CACHE:
@@ -33,6 +34,15 @@ def _get_embedder(model_name: str) -> CachedEmbedder:
         _EMBED_CACHE[model_name] = CachedEmbedder(model_name)
     return _EMBED_CACHE[model_name]
 
+def extract_entities_simple(query: str) -> List[str]:
+    keywords = [
+        w.lower() for w in query.split()
+        if len(w) > 3
+    ]
+    return keywords
+def fuzzy_match(entity, candidates):
+    entity = entity.lower()
+    return any(entity in c or c in entity for c in candidates)
 
 # -------------------------- Read artifacts -------------------------------
 
@@ -50,7 +60,12 @@ def load_artifacts(artifacts_dir: os.PathLike, index_prefix: str) -> Tuple[faiss
     sources     = pickle.load(open(artifacts_dir / f"{index_prefix}_sources.pkl", "rb"))
     metadata = pickle.load(open(artifacts_dir / f"{index_prefix}_meta.pkl", "rb"))
 
-    return faiss_index, bm25_index, chunks, sources, metadata
+    kg_path = artifacts_dir / f"{index_prefix}_kg.pkl"
+    kg = None
+    if kg_path.exists():
+        kg = pickle.load(open(kg_path, "rb"))
+
+    return faiss_index, bm25_index, chunks, sources, metadata, kg
 
 
 # -------------------------- Helper to get page nums for chunks -------------------------------
@@ -279,3 +294,56 @@ class IndexKeywordRetriever(Retriever):
                 continue
             keywords.append(IndexKeywordRetriever._lemmatize_word(cleaned, lemmatizer))
         return keywords
+    
+class KnowledgeGraphRetriever(Retriever):
+    name = "kg"
+
+    def __init__(self, kg, metadata):
+        self.kg = kg
+        self.metadata = metadata
+    def get_scores(self, query: str, pool_size: int, chunks: List[str]) -> Dict[int, float]:
+        if self.kg is None:
+            return {}
+
+        entities = extract_entities_simple(query)
+        if not entities:
+            return {}
+
+        # Step 1: Get related entities from KG
+        related_entities = set(entities)
+
+        for e in entities:
+            try:
+                neighbors = self.kg.get_neighbors(e, depth=2)
+                for h, r, t in neighbors:
+                    related_entities.add(h)
+                    related_entities.add(t)
+            except Exception:
+                continue
+
+        if not related_entities:
+            return {}
+        print(f"Related entities for query: {related_entities}")
+        # Step 2: Score chunks based on metadata triplets
+        scores = {}
+
+        for idx, meta in enumerate(self.metadata):
+            triplets = meta.get("triplets", [])
+            if not triplets:
+                continue
+
+            match_count = 0
+
+            for h, r, t in triplets:
+                if fuzzy_match(h, related_entities) or fuzzy_match(t, related_entities):
+                    match_count += 1
+
+            if match_count > 0:
+                scores[idx] = float(match_count)
+
+                # Normalize scores
+                if scores:
+                    max_score = max(scores.values())
+                    scores = {k: v / max_score for k, v in scores.items()}
+
+                return scores

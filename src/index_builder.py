@@ -20,7 +20,9 @@ from src.embedder import SentenceTransformer
 
 from src.preprocessing.chunking import DocumentChunker, ChunkConfig
 from src.preprocessing.extraction import extract_sections_from_markdown
-
+from src.knowledge_graph import KnowledgeGraph
+from src.preprocessing.extraction import extract_triplets
+from src.preprocessing.kg_llm import extract_graph_from_text
 # ----- runtime parallelism knobs (avoid oversubscription) -----
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -58,13 +60,12 @@ def build_index(
     all_chunks: List[str] = []
     sources: List[str] = []
     metadata: List[Dict] = []
-
+    kg = KnowledgeGraph()
     # Extract sections from markdown. Exclude some with certain keywords.
     sections = extract_sections_from_markdown(
         markdown_file,
         exclusion_keywords=DEFAULT_EXCLUSION_KEYWORDS
     )
-
     page_to_chunk_ids = {}
     current_page = 1
     total_chunks = 0
@@ -93,7 +94,7 @@ def build_index(
 
         # Use DocumentChunker to recursively split this section
         sub_chunks = chunker.chunk(c['content'])
-
+    
         # Regex to find page markers like "--- Page 3 ---"
         page_pattern = re.compile(r'--- Page (\d+) ---')
 
@@ -131,7 +132,9 @@ def build_index(
 
             # Clean sub_chunk by removing page markers
             clean_chunk = re.sub(page_pattern, '', sub_chunk).strip()
-            
+            triplets = extract_graph_from_text(clean_chunk)
+            if triplets:
+                kg.add_triplets(triplets)
             # Skip introduction chunks for embedding
             if c["heading"] == "Introduction":
                 continue
@@ -146,7 +149,8 @@ def build_index(
                 "section_path": full_section_path,
                 "text_preview": clean_chunk[:100],
                 "page_numbers": sorted(list(chunk_pages)),
-                "chunk_id": total_chunks + sub_chunk_id
+                "chunk_id": total_chunks + sub_chunk_id,
+                "triplets": triplets 
             }
 
             # Prepare chunk with prefix
@@ -165,14 +169,14 @@ def build_index(
         total_chunks += len(sub_chunks)
 
     # Convert the sets to sorted lists for a clean, predictable output
-    final_map = {}
-    for page, id_set in page_to_chunk_ids.items():
-        final_map[page] = sorted(list(id_set))
+    # final_map = {}
+    # for page, id_set in page_to_chunk_ids.items():
+    #     final_map[page] = sorted(list(id_set))
 
-    output_file = artifacts_dir / f"{index_prefix}_page_to_chunk_map.json"
-    with open(output_file, "w") as f:
-        json.dump(final_map, f, indent=2)
-    print(f"Saved page to chunk ID map: {output_file}")
+    # output_file = artifacts_dir / f"{index_prefix}_page_to_chunk_map.json"
+    # with open(output_file, "w") as f:
+    #     json.dump(final_map, f, indent=2)
+    # print(f"Saved page to chunk ID map: {output_file}")
 
     # Step 2: Create embeddings for FAISS index
     print(f"Embedding {len(all_chunks):,} chunks with {pathlib.Path(embedding_model_path).stem} ...")
@@ -226,8 +230,25 @@ def build_index(
         pickle.dump(metadata, f)
     print(f"Saved all index artifacts with prefix: {index_prefix}")
 
-# ------------------------ Helper functions ------------------------------
+    kg_path = artifacts_dir / f"{index_prefix}_kg.pkl"
+    with open(kg_path, "wb") as f:
+        pickle.dump(kg, f)
 
+    print(f"Knowledge Graph saved: {kg_path}")
+# ------------------------ Helper functions ------------------------------
+def build_kg_from_chunks_pickle(artifacts_dir: os.PathLike) -> None:
+    chunks_path = artifacts_dir / "textbook_index_chunks.pkl"
+    with open(chunks_path, "rb") as f:        
+        chunks = pickle.load(f)   
+    kg = KnowledgeGraph()
+    print("Procssing ",len(chunks), " chunks")
+    for i, chunk in enumerate(chunks):
+        print(i)
+        triplets = extract_graph_from_text(chunk)
+        if triplets:
+            kg.add_triplets(triplets)
+    with open(artifacts_dir / "textbook_index_kg.pkl", "wb") as f:
+        pickle.dump(kg, f)
 def preprocess_for_bm25(text: str) -> list[str]:
     """
     Simplifies text to keep only letters, numbers, underscores, hyphens,

@@ -14,6 +14,8 @@ from rich.markdown import Markdown
 from src.config import RAGConfig
 from src.generator import answer, double_answer, dedupe_generated_text
 from src.index_builder import build_index
+from src.index_builder import build_kg_from_chunks_pickle
+
 from src.instrumentation.logging import get_logger
 from src.ranking.ranker import EnsembleRanker
 from src.preprocessing.chunking import DocumentChunker
@@ -23,6 +25,7 @@ from src.retriever import (
     BM25Retriever, 
     FAISSRetriever, 
     IndexKeywordRetriever, 
+    KnowledgeGraphRetriever,
     get_page_numbers, 
     load_artifacts
 )
@@ -39,6 +42,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--system_prompt_mode", choices=["baseline", "tutor", "concise", "detailed"], default="baseline")
     
     indexing_group = parser.add_argument_group("indexing options")
+    indexing_group.add_argument("--build_kg", default=False, action="store_true")
     indexing_group.add_argument("--keep_tables", action="store_true")
     indexing_group.add_argument("--multiproc_indexing", action="store_true")
     indexing_group.add_argument("--embed_with_headings", action="store_true")
@@ -51,6 +55,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 def run_index_mode(args: argparse.Namespace, cfg: RAGConfig):
+    if args.build_kg:
+        artifacts_dir = cfg.get_artifacts_directory()
+        build_kg_from_chunks_pickle(artifacts_dir=artifacts_dir)
+        return
     strategy = cfg.get_chunk_strategy()
     chunker = DocumentChunker(strategy=strategy, keep_tables=args.keep_tables)
     artifacts_dir = cfg.get_artifacts_directory()
@@ -163,15 +171,17 @@ def get_answer(
             faiss_scores = raw_scores.get("faiss", {})
             bm25_scores = raw_scores.get("bm25", {})
             index_scores = raw_scores.get("index_keywords", {})
-            
+            kg_scores = raw_scores.get("kg", {})
+
             faiss_ranked = sorted(faiss_scores.keys(), key=lambda i: faiss_scores[i], reverse=True)
             bm25_ranked = sorted(bm25_scores.keys(), key=lambda i: bm25_scores[i], reverse=True)
             index_ranked = sorted(index_scores.keys(), key=lambda i: index_scores[i], reverse=True)
-            
+            kg_ranked = sorted(kg_scores.keys(), key=lambda i: kg_scores[i], reverse=True)
+
             faiss_ranks = {idx: rank + 1 for rank, idx in enumerate(faiss_ranked)}
             bm25_ranks = {idx: rank + 1 for rank, idx in enumerate(bm25_ranked)}
             index_ranks = {idx: rank + 1 for rank, idx in enumerate(index_ranked)}
-            
+            kg_ranks = {idx: rank + 1 for rank, idx in enumerate(kg_ranked)}
             chunks_info = []
             for rank, idx in enumerate(topk_idxs, 1):
                 chunks_info.append({
@@ -184,8 +194,10 @@ def get_answer(
                     "bm25_rank": bm25_ranks.get(idx, 0),
                     "index_score": index_scores.get(idx, 0),
                     "index_rank": index_ranks.get(idx, 0),
+                    "kg_score": kg_scores.get(idx, 0),
+                    "kg_rank": kg_ranks.get(idx, 0),
                 })
-
+            # print("Chunks info for test mode:", chunks_info)
         # Step 3: Final re-ranking
         ranked_chunks = rerank(question, ranked_chunks, mode=cfg.rerank_mode, top_n=cfg.rerank_top_k)
         # print("Reranked Chunks", type(ranked_chunks), len(ranked_chunks), type(ranked_chunks[0]) if ranked_chunks else "No chunks")
@@ -285,9 +297,9 @@ def run_chat_session(args: argparse.Namespace, cfg: RAGConfig):
     print("Initializing TokenSmith Chat...")
     try:
         artifacts_dir = cfg.get_artifacts_directory()
-        faiss_idx, bm25_idx, chunks, sources, meta = load_artifacts(artifacts_dir, args.index_prefix)
+        faiss_idx, bm25_idx, chunks, sources, meta, kg = load_artifacts(artifacts_dir, args.index_prefix)
         print(f"Loaded {len(chunks)} chunks and {len(sources)} sources from artifacts.")
-        retrievers = [FAISSRetriever(faiss_idx, cfg.embed_model), BM25Retriever(bm25_idx)]
+        retrievers = [FAISSRetriever(faiss_idx, cfg.embed_model), BM25Retriever(bm25_idx), KnowledgeGraphRetriever(kg, meta)]
         if cfg.ranker_weights.get("index_keywords", 0) > 0:
             retrievers.append(IndexKeywordRetriever(cfg.extracted_index_path, cfg.page_to_chunk_map_path))
         

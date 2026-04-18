@@ -242,6 +242,20 @@ def preprocess_extracted_section(text: str) -> str:
 
     return cleaned_text
 
+def extract_triplets(text: str):
+    """
+    Replace later with LLM.
+    """
+    triplets = []
+    
+    import re
+    pattern = r"(\w+)\s+is\s+(\w+)\s+(of|in|for)\s+(\w+)"
+    matches = re.findall(pattern, text)
+
+    for h, r, t in matches:
+        triplets.append((h, r, t))
+
+    return triplets
 
 def main():
     # Returns all pdf files under data/chapters/
