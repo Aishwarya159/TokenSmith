@@ -15,7 +15,7 @@ The logging has been updated to see what are the chunks added by KG and what are
 # TokenSmith
 
 **TokenSmith** is a local-first database system for students to query textbooks, lecture slides, and notes and get fast, cited answers on their own machines using local LLMs. It is based on retrieval augmented generation (RAG) and applies database-inspired principles like indexing, latency-focused querying, caching, and incremental builds, to optimize the ingestion -> retrieval -> generation pipeline.
-
+Note: Ensure the downloaded models are loaded in the models/ directory before the breaking code changes made recently
 <img width="1255" height="843" alt="tokensmith" src="https://github.com/user-attachments/assets/b36d6227-8cec-4f71-aacc-fccdd1285378" />
 
 
