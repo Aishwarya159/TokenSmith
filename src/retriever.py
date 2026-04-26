@@ -18,86 +18,89 @@ from nltk.stem import WordNetLemmatizer
 import faiss
 import numpy as np
 from src.embedder import CachedEmbedder
+from src.knowledge_graph import KnowledgeGraph
 
 from src.config import RAGConfig
 from src.index_builder import preprocess_for_bm25
-import spacy
 
 # -------------------------- Embedder cache ------------------------------
 
 _EMBED_CACHE: Dict[str, CachedEmbedder] = {}
-nlp = spacy.load("en_core_web_sm")
 
 def _get_embedder(model_name: str) -> CachedEmbedder:
     if model_name not in _EMBED_CACHE:
-        # Use the cached embedding model to avoid reloading it on every call
         _EMBED_CACHE[model_name] = CachedEmbedder(model_name)
     return _EMBED_CACHE[model_name]
 
-def extract_entities_simple(query: str) -> List[str]:
-    keywords = [
-        w.lower() for w in query.split()
-        if len(w) > 3
-    ]
-    return keywords
-def fuzzy_match(entity, candidates):
-    entity = entity.lower()
-    return any(entity in c or c in entity for c in candidates)
 
 # -------------------------- Read artifacts -------------------------------
 
-def load_artifacts(artifacts_dir: os.PathLike, index_prefix: str) -> Tuple[faiss.Index, List[str], List[str], Any]:
+def load_artifacts(
+    artifacts_dir: os.PathLike,
+    index_prefix: str,
+) -> Tuple[faiss.Index, Any, List[str], List[str], Any, Any]:
     """
     Loads:
-      - FAISS index: {index_prefix}.faiss
-      - chunks:      {index_prefix}_chunks.pkl
-      - sources:     {index_prefix}_sources.pkl
+      - FAISS index:  {index_prefix}.faiss
+      - BM25 index:   {index_prefix}_bm25.pkl
+      - chunks:       {index_prefix}_chunks.pkl
+      - sources:      {index_prefix}_sources.pkl
+      - metadata:     {index_prefix}_meta.pkl
+      - KG:           knowledge_graph.json (preferred) or {index_prefix}_kg.pkl (fallback)
     """
     artifacts_dir = pathlib.Path(artifacts_dir)
-    faiss_index = faiss.read_index(str(artifacts_dir / f"{index_prefix}.faiss"))
-    bm25_index  = pickle.load(open(artifacts_dir / f"{index_prefix}_bm25.pkl", "rb"))
-    chunks      = pickle.load(open(artifacts_dir / f"{index_prefix}_chunks.pkl", "rb"))
-    sources     = pickle.load(open(artifacts_dir / f"{index_prefix}_sources.pkl", "rb"))
-    metadata = pickle.load(open(artifacts_dir / f"{index_prefix}_meta.pkl", "rb"))
 
-    kg_path = artifacts_dir / f"{index_prefix}_kg.pkl"
+    faiss_index = faiss.read_index(str(artifacts_dir / f"{index_prefix}.faiss"))
+    bm25_index  = pickle.load(open(artifacts_dir / f"{index_prefix}_bm25.pkl",   "rb"))
+    chunks      = pickle.load(open(artifacts_dir / f"{index_prefix}_chunks.pkl",  "rb"))
+    sources     = pickle.load(open(artifacts_dir / f"{index_prefix}_sources.pkl", "rb"))
+    metadata    = pickle.load(open(artifacts_dir / f"{index_prefix}_meta.pkl",    "rb"))
+
+    # KG: prefer JSON (portable) → fall back to pkl (legacy)
     kg = None
-    if kg_path.exists():
-        kg = pickle.load(open(kg_path, "rb"))
+    kg_json = artifacts_dir / f"{index_prefix}_kg.json"
+    kg_pkl  = artifacts_dir / f"{index_prefix}_kg.pkl"
+
+    if kg_json.exists():
+        kg = KnowledgeGraph.load(str(kg_json))
+    elif kg_pkl.exists():
+        with open(kg_pkl, "rb") as f:
+            kg = pickle.load(f)
 
     return faiss_index, bm25_index, chunks, sources, metadata, kg
 
 
-# -------------------------- Helper to get page nums for chunks -------------------------------
+# -------------------------- Helper to get page nums for chunks -----------
 
-def get_page_numbers(chunk_indices: list[int], metadata: list[dict]) -> dict[int, List[int]]:
+def get_page_numbers(
+    chunk_indices: list[int],
+    metadata: list[dict],
+) -> dict[int, List[int]]:
     if not metadata or not chunk_indices:
         return {}
 
     page_map: dict[int, List[int]] = {}
-
     for chunk_idx in chunk_indices:
         chunk_idx = int(chunk_idx)
         if 0 <= chunk_idx < len(metadata):
             chunk_pages = metadata[chunk_idx].get("page_numbers")
             if chunk_pages is None:
-                continue  # don't store None; callers can default to [1]
+                continue
             page_map[chunk_idx] = chunk_pages
 
     return page_map
 
-# -------------------------- Filtering logic -----------------------------
+# -------------------------- Filtering logic ------------------------------
 
 def filter_retrieved_chunks(cfg: RAGConfig, chunks, ordered):
-    topk_idxs = ordered[:cfg.top_k]
-    return topk_idxs
+    return ordered[:cfg.top_k]
 
-# -------------------------- Retrieval core ------------------------------
+# -------------------------- Retrieval core -------------------------------
 
 class Retriever(ABC):
     @abstractmethod
     def get_scores(self, query: str, pool_size: int, chunks: List[str]):
-        """Retrieves the top 'pool_size' chunks cores for a given query."""
+        """Return a {chunk_index: score} dict for the top pool_size chunks."""
         pass
 
 
@@ -105,39 +108,24 @@ class FAISSRetriever(Retriever):
     name = "faiss"
 
     def __init__(self, index, embed_model: str):
-        self.index = index
+        self.index   = index
         self.embedder = _get_embedder(embed_model)
 
-    def get_scores(self,
-                query: str,
-                pool_size: int,
-                chunks: List[str]) -> Dict[int, float]:
-        """
-        Returns FAISS scores for top 'pool_size' keyed by global chunk index.
-        """
-        # FAISS expects a 2D array
+    def get_scores(self, query: str, pool_size: int, chunks: List[str]) -> Dict[int, float]:
         q_vec = self.embedder.encode([query]).astype("float32")
-        
-        # Safety check on vector dimensions
-        if q_vec.shape[1] !=  self.index.d:
+
+        if q_vec.shape[1] != self.index.d:
             raise ValueError(
-                f"Embedding dim mismatch: index={ self.index.d} vs query={q_vec.shape[1]}"
+                f"Embedding dim mismatch: index={self.index.d} vs query={q_vec.shape[1]}"
             )
 
-        # Perform the search
-        distances, indices =  self.index.search(q_vec, pool_size)
-
-        # Remove invalid indices and ensure they are within bounds
+        distances, indices = self.index.search(q_vec, pool_size)
         cand_idxs = [i for i in indices[0] if 0 <= i < len(chunks)]
-
-        # Create the distance dictionary, ensuring we only include valid candidates
-        dists = {idx: float(dist) for idx, dist in zip(cand_idxs, distances[0][:len(cand_idxs)])}
-
-        # Invert distance to score: 1 / (1 + distance). Adding 1 avoids division by zero.
-        return {
-            idx: 1.0 / (1.0 + dist)
-            for idx, dist in dists.items()
+        dists = {
+            idx: float(dist)
+            for idx, dist in zip(cand_idxs, distances[0][: len(cand_idxs)])
         }
+        return {idx: 1.0 / (1.0 + dist) for idx, dist in dists.items()}
 
 
 class BM25Retriever(Retriever):
@@ -146,204 +134,237 @@ class BM25Retriever(Retriever):
     def __init__(self, index):
         self.index = index
 
-    def get_scores(self,
-                 query: str,
-                 pool_size: int,
-                 chunks: List[str]) -> Dict[int, float]:
-        """
-        Returns BM25 scores for top 'pool_size' keyed by global chunk index.
-        """
-        # Tokenize the query in the same way the index was built
+    def get_scores(self, query: str, pool_size: int, chunks: List[str]) -> Dict[int, float]:
         tokenized_query = preprocess_for_bm25(query)
+        all_scores      = self.index.get_scores(tokenized_query)
 
-        # Get scores for all documents in the corpus
-        all_scores = self.index.get_scores(tokenized_query)
-
-        # Find the indices of the top 'pool_size' scores
         num_candidates = min(pool_size, len(all_scores))
-        top_k_indices = np.argpartition(-all_scores, kth=num_candidates-1)[:num_candidates]
+        top_k_indices  = np.argpartition(-all_scores, kth=num_candidates - 1)[:num_candidates]
+        top_k_indices  = [i for i in top_k_indices if 0 <= i < len(chunks)]
+        top_scores     = all_scores[top_k_indices]
 
-        # Remove invalid indices and ensure they are within bounds
-        top_k_indices = [i for i in top_k_indices if 0 <= i < len(chunks)]
-        
-        # Get the corresponding scores for the top indices
-        top_scores = all_scores[top_k_indices]
-
-        # Format the output as a dictionary of scores
-        scores = {int(idx): float(score) for idx, score in zip(top_k_indices, top_scores)}
-
-        return scores
+        return {int(idx): float(score) for idx, score in zip(top_k_indices, top_scores)}
 
 
 class IndexKeywordRetriever(Retriever):
     name = "index_keywords"
-    
-    def __init__(self, extracted_index_path: os.PathLike, page_to_chunk_map_path: os.PathLike):
-        """
-        Retriever that uses textbook index keywords to boost chunks on relevant pages.
-        
-        Args:
-            extracted_index_path: Path to extracted_index.json (keyword -> page numbers)
-            page_to_chunk_map_path: Path to page_to_chunk_map.json (page -> chunk IDs)
-        """
+
+    def __init__(
+        self,
+        extracted_index_path: os.PathLike,
+        page_to_chunk_map_path: os.PathLike,
+    ):
         import json
-        nltk.download('wordnet', quiet=True)
+        nltk.download("wordnet", quiet=True)
         self.page_to_chunk_map = {}
-        
-        # Load and normalize index: lemmatize phrases as units
-        # Build token->phrase mapping for fast lookup
+
         if os.path.exists(extracted_index_path):
             lemmatizer = WordNetLemmatizer()
-            
-            with open(extracted_index_path, 'r') as f:
+            with open(extracted_index_path, "r") as f:
                 raw_index = json.load(f)
-                self.phrase_to_pages = {}  # phrase -> pages
-                self.token_to_phrases = {}  # token -> [phrases]
-                
-                for key, pages in raw_index.items():
-                    # Lemmatize each word in the phrase but keep phrase together
-                    key_lower = key.lower()
-                    words = key_lower.split()
-                    lemmatized_words = []
-                    
-                    for word in words:
-                        cleaned = word.strip('.,!?()[]:"\'')
-                        if not cleaned:
-                            continue
-                        lemmatized_words.append(self._lemmatize_word(cleaned, lemmatizer))
-                    
-                    lemmatized_phrase = ' '.join(lemmatized_words)
-                    self.phrase_to_pages[lemmatized_phrase] = pages
-                    
-                    # Build reverse index: each token points to phrases containing it
-                    for token in lemmatized_words:
-                        if token not in self.token_to_phrases:
-                            self.token_to_phrases[token] = []
-                        self.token_to_phrases[token].append(lemmatized_phrase)
+
+            self.phrase_to_pages: dict = {}
+            self.token_to_phrases: dict = {}
+
+            for key, pages in raw_index.items():
+                words = key.lower().split()
+                lemmatized_words = [
+                    self._lemmatize_word(w.strip('.,!?()[]:"\''), lemmatizer)
+                    for w in words
+                    if w.strip('.,!?()[]:"\'')
+                ]
+                lemmatized_phrase = " ".join(lemmatized_words)
+                self.phrase_to_pages[lemmatized_phrase] = pages
+                for token in lemmatized_words:
+                    self.token_to_phrases.setdefault(token, []).append(lemmatized_phrase)
         else:
-            self.phrase_to_pages = {}
+            self.phrase_to_pages  = {}
             self.token_to_phrases = {}
-        
+
         if os.path.exists(page_to_chunk_map_path):
-            with open(page_to_chunk_map_path, 'r') as f:
+            with open(page_to_chunk_map_path, "r") as f:
                 self.page_to_chunk_map = json.load(f)
-    
+
     def get_scores(self, query: str, pool_size: int, chunks: List[str]) -> Dict[int, float]:
-        """
-        Returns scores for chunks that match index keywords.
-        Score is proportional to the number of keyword hits.
-        """
-        keywords = self._extract_keywords(query)
-        # chunk_id -> hit count
-        chunk_hit_counts: Dict[int, int] = {} 
-        
-        # Match query keywords against index phrases (token overlap)
+        keywords        = self._extract_keywords(query)
+        chunk_hit_counts: Dict[int, int] = {}
+
         for keyword in keywords:
             if keyword not in self.token_to_phrases:
                 continue
-            
-            # Get all phrases containing this keyword token
-            matching_phrases = self.token_to_phrases[keyword]
-            
-            for phrase in matching_phrases:
-                page_numbers = self.phrase_to_pages[phrase]
-                
-                # Map pages to chunks
-                for page_no in page_numbers:
-                    chunk_ids = self.page_to_chunk_map.get(str(page_no), [])
-                    for chunk_id in chunk_ids:
-                        if chunk_id >= 0 and chunk_id < len(chunks):
+            for phrase in self.token_to_phrases[keyword]:
+                for page_no in self.phrase_to_pages[phrase]:
+                    for chunk_id in self.page_to_chunk_map.get(str(page_no), []):
+                        if 0 <= chunk_id < len(chunks):
                             chunk_hit_counts[chunk_id] = chunk_hit_counts.get(chunk_id, 0) + 1
-        
+
         if not chunk_hit_counts:
             return {}
-        
-        # Normalize scores: more keyword hits = higher score
+
         max_hits = max(chunk_hit_counts.values())
-        scores = {
+        return {
             chunk_id: float(hit_count) / max_hits
             for chunk_id, hit_count in chunk_hit_counts.items()
         }
-        
-        return scores
-    
+
     @staticmethod
     def _lemmatize_word(word: str, lemmatizer) -> str:
-        """Lemmatize a word, trying noun then verb."""
-        lemma = lemmatizer.lemmatize(word, pos='n')
+        lemma = lemmatizer.lemmatize(word, pos="n")
         if lemma == word:
-            lemma = lemmatizer.lemmatize(word, pos='v')
+            lemma = lemmatizer.lemmatize(word, pos="v")
         return lemma
-    
+
     @staticmethod
     def _extract_keywords(query: str) -> List[str]:
-        """Extract keywords from query by removing stopwords and lemmatizing."""
-        
         stopwords = {
             "the", "is", "at", "which", "on", "for", "a", "an", "and", "or", "in",
-            "to", "of", "by", "with", "that", "this", "it", "as", "are", "was", 
-            "what", "how", "why", "when", "where", "who", "does", "do", "be"
+            "to", "of", "by", "with", "that", "this", "it", "as", "are", "was",
+            "what", "how", "why", "when", "where", "who", "does", "do", "be",
         }
-        
         lemmatizer = WordNetLemmatizer()
-        words = query.lower().split()
-        keywords = []
-        for word in words:
+        keywords   = []
+        for word in query.lower().split():
             cleaned = word.strip('.,!?()[]:"\'')
             if not cleaned or cleaned in stopwords:
                 continue
             keywords.append(IndexKeywordRetriever._lemmatize_word(cleaned, lemmatizer))
         return keywords
-    
+
+
 class KnowledgeGraphRetriever(Retriever):
     name = "kg"
 
-    def __init__(self, kg, metadata):
-        self.kg = kg
+    def __init__(self, kg: KnowledgeGraph, metadata: list[dict]):
+        self.kg       = kg
         self.metadata = metadata
-    def get_scores(self, query: str, pool_size: int, chunks: List[str]) -> Dict[int, float]:
+
+        # Build chunk_id string → metadata list index map
+        # Handles both bare numeric IDs ("512") and prefixed IDs ("chunk_0512")
+        self._chunk_id_to_meta_idx: dict[str, int] = {}
+        for idx, meta in enumerate(metadata):
+            cid     = meta.get("chunk_id") or meta.get("id") or str(idx)
+            cid_str = str(cid)
+            self._chunk_id_to_meta_idx[cid_str] = idx
+            try:
+                numeric = int(cid_str)
+                self._chunk_id_to_meta_idx[f"chunk_{numeric:04d}"] = idx
+            except ValueError:
+                pass
+
+    # ------------------------------------------------------------------
+    # Main scoring entry point
+    # ------------------------------------------------------------------
+
+    def get_scores(self, query: str, pool_size: int, chunks: list[str]) -> dict[int, float]:
         if self.kg is None:
             return {}
 
-        entities = extract_entities_simple(query)
-        if not entities:
+        # ── Step 1: find seed entities ─────────────────────────────────
+        seed_entities = self.kg.find_entities_by_name(query, top_k=5)
+        if not seed_entities:
             return {}
 
-        # Step 1: Get related entities from KG
-        related_entities = set(entities)
+        seed_ids = [e.id for e in seed_entities]
+        print(f"[KG] Seed entities: {[e.name for e in seed_entities]}")
 
-        for e in entities:
-            try:
-                neighbors = self.kg.get_neighbors(e, depth=2)
-                for h, r, t in neighbors:
-                    related_entities.add(h)
-                    related_entities.add(t)
-            except Exception:
+        # ── Step 2: expand subgraph ────────────────────────────────────
+        subgraph_ids = self.kg.subgraph_around(seed_ids, hops=1)
+        subgraph_set = set(subgraph_ids)
+
+        # ── Step 3: pre-compute ALL hop distances in one pass ──────────
+        # Avoids running a full BFS for every entity on every edge
+        hop_distances: dict[str, int] = {}
+        for eid in subgraph_ids:
+            hop_distances[eid] = self._hop_distance(eid, seed_ids)
+
+        # ── Step 4: score chunks by entity hop distance ─────────────────
+        raw_chunk_scores: dict[str, float] = {}
+
+        for eid in subgraph_ids:
+            entity = self.kg.entities.get(eid)
+            if entity is None:
                 continue
+            hop           = hop_distances[eid]
+            entity_weight = 1.0 / (2.0 ** hop)  # hop 0 → 1.0, hop 1 → 0.5
+            # First source chunk only — prevents over-extracted entities
+            # (e.g. "atomicity" from 20 chapters) flooding the score map
+            for cid in entity.source_chunks[:1]:
+                raw_chunk_scores[cid] = raw_chunk_scores.get(cid, 0.0) + entity_weight
 
-        if not related_entities:
+        # ── Step 5: bridge boost — deduplicated per chunk_id ───────────
+        # Track which chunk_ids have already received a bridge bonus to
+        # prevent the same chunk being boosted multiple times when the LLM
+        # extracted several relations from it in the same chunk
+        seen_bridge_chunks: set[str] = set()
+
+        for src_id in subgraph_set:
+            src_hop = hop_distances.get(src_id, 3)
+            for tgt_id, relation, context, chunk_id in self.kg.neighbors(src_id):
+                if tgt_id not in subgraph_set or not chunk_id:
+                    continue
+                if chunk_id in seen_bridge_chunks:
+                    continue  # already boosted this chunk, skip
+
+                tgt_hop      = hop_distances.get(tgt_id, 3)
+                # Higher bonus when bridging nodes at different hop distances
+                # — that is the actual multihop case (seed → hop-1 neighbor)
+                bridge_bonus = 0.75 if src_hop != tgt_hop else 0.25
+                raw_chunk_scores[chunk_id] = (
+                    raw_chunk_scores.get(chunk_id, 0.0) + bridge_bonus
+                )
+                seen_bridge_chunks.add(chunk_id)
+
+        if not raw_chunk_scores:
             return {}
-        print(f"Related entities for query: {related_entities}")
-        # Step 2: Score chunks based on metadata triplets
-        scores = {}
 
-        for idx, meta in enumerate(self.metadata):
-            triplets = meta.get("triplets", [])
-            if not triplets:
-                continue
+        # ── Step 6: map chunk string IDs → integer indices ──────────────
+        scores: dict[int, float] = {}
+        for cid, raw_score in raw_chunk_scores.items():
+            idx = self._chunk_id_to_meta_idx.get(cid)
+            if idx is not None and 0 <= idx < len(chunks):
+                scores[idx] = scores.get(idx, 0.0) + raw_score
 
-            match_count = 0
+        if not scores:
+            return {}
 
-            for h, r, t in triplets:
-                if fuzzy_match(h, related_entities) or fuzzy_match(t, related_entities):
-                    match_count += 1
+        # ── Step 7: normalize to [0, 1] ─────────────────────────────────
+        max_score = max(scores.values())
+        scores    = {k: v / max_score for k, v in scores.items()}
 
-            if match_count > 0:
-                scores[idx] = float(match_count)
+        # ── Step 8: filter out low-confidence chunks ─────────────────────
+        # Removes noise from weakly-matched entities that scraped a 
+        # tiny score from a single distant hop
+        MIN_KG_SCORE = 0.3
+        scores = {k: v for k, v in scores.items() if v >= MIN_KG_SCORE}
 
-                # Normalize scores
-                if scores:
-                    max_score = max(scores.values())
-                    scores = {k: v / max_score for k, v in scores.items()}
+        print(
+            f"[KG] Scored {len(scores)} chunks "
+            f"(seeds={len(seed_ids)}, subgraph={len(subgraph_ids)})"
+        )
+        return scores
+    
+    def _hop_distance(self, entity_id: str, seed_ids: list[str]) -> int:
+        """
+        Shortest hop count from any seed entity to entity_id via _adj.
+        Returns 0 if entity_id is itself a seed, capped at 3 otherwise.
+        """
+        if entity_id in seed_ids:
+            return 0
 
-                return scores
+        visited  = set(seed_ids)
+        frontier = set(seed_ids)
+
+        for hop in range(1, 4):
+            next_frontier: set[str] = set()
+            for src in frontier:
+                for tgt_id, _, _, _ in self.kg.neighbors(src):
+                    if tgt_id == entity_id:
+                        return hop
+                    if tgt_id not in visited:
+                        next_frontier.add(tgt_id)
+                        visited.add(tgt_id)
+            frontier = next_frontier
+            if not frontier:
+                break
+
+        return 3
