@@ -1,0 +1,228 @@
+{
+    "timestamp": "2026-04-25T20:54:54.734873",
+    "query": "scores = {eid: s for eid, s in scores.items() if s >= 2}",
+    "chat_request_params": {
+        "system_prompt": "baseline",
+        "max_tokens": 400
+    },
+    "config_state": {
+        "chunk_mode": "recursive_sections",
+        "chunk_size": 2000,
+        "chunk_overlap": 200,
+        "top_k": 15,
+        "num_candidates": 75,
+        "embed_model": "models/Qwen3-Embedding-4B-Q5_K_M.gguf",
+        "ensemble_method": "rrf",
+        "rrf_k": 60,
+        "ranker_weights": {
+            "faiss": 0.7,
+            "bm25": 0,
+            "index_keywords": 0,
+            "kg": 0.3
+        },
+        "rerank_mode": "cross_encoder",
+        "rerank_top_k": 5,
+        "max_gen_tokens": 400,
+        "gen_model": "models/qwen2.5-1.5b-instruct-q5_k_m.gguf",
+        "system_prompt_mode": "baseline",
+        "disable_chunks": false,
+        "use_golden_chunks": false,
+        "output_mode": "terminal",
+        "metrics": [
+            "all"
+        ],
+        "use_hyde": false,
+        "hyde_max_tokens": 300,
+        "use_double_prompt": false,
+        "enable_history": true,
+        "max_history_turns": 3,
+        "use_indexed_chunks": false,
+        "extracted_index_path": "data/extracted_index.json",
+        "page_to_chunk_map_path": "index/sections/textbook_index_page_to_chunk_map.json",
+        "enable_topic_extraction": true
+    },
+    "top_k": 15,
+    "retrieved_chunks": [
+        {
+            "rank": 1,
+            "idx": 8,
+            "chunk": "Description: Chapter 1 Section 1.2 Purpose of Database Systems Content: . As expected, a program to generate such a list does not exist. Again, the clerk has the preceding two options, neither of which is satisfactory. The point here is that conventional file-processing environments do not allow needed data to be retrieved in a convenient and efficient manner. More responsive data-retrieval systems are required for general use. - Data isolation. Because data are scattered in various files, and files may be in different formats, writing new application programs to retrieve the appropriate data is difficult. - Integrity problems. The data values stored in the database must satisfy certain types of consistency constraints . Suppose the university maintains an account for each department, and records the balance amount in each account. Suppose also that the university requires that the account balance of a department may never fall below zero. Developers enforce these constraints in the system by adding appropriate code in the various application programs. However, when new constraints are added, it is difficult to change the programs to enforce them. The problem is compounded when constraints involve several data items from different files. - Atomicity problems. A computer system, like any other device, is subject to failure. In many applications,  - Page 7 it is crucial that, if a failure occurs, the data be restored to the consistent state that existed prior to the failure. Consider a banking system with a program to transfer $500 from account A to account B . If a system failure occurs during the execution of the program, it is possible that the $500 was removed from the balance of account A but was not credited to the balance of account B , resulting in an inconsistent database state. Clearly, it is essential to database consistency that either both the credit and debit occur, or that neither occur. That is, the funds transfer must be atomic -it must happen in its entirety or not at all",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                53,
+                54
+            ]
+        },
+        {
+            "rank": 2,
+            "idx": 9,
+            "chunk": "Description: Chapter 1 Section 1.2 Purpose of Database Systems Content: . That is, the funds transfer must be atomic -it must happen in its entirety or not at all. It is difficult to ensure atomicity in a conventional fileprocessing system. - Concurrent-access anomalies. For the sake of overall performance of the system and faster response, many systems allow multiple users to update the data simultaneously. Indeed, today, the largest internet retailers may have millions of accesses per day to their data by shoppers. In such an environment, interaction of concurrent updates is possible and may result in inconsistent data. Consider account A , with a balance of $10,000. If two bank clerks debit the account balance (by say $500 and $100, respectively) of account A at almost exactly the same time, the result of the concurrent executions may leave the account balance in an incorrect (or inconsistent) state. Suppose that the programs executing on behalf of each withdrawal read the old balance, reduce that value by the amount being withdrawn, and write the result back. If the two programs run concurrently, they may both read the value $10,000, and write back $9500 and $9900, respectively. Depending on which one writes the value last, the balance of account A may contain either $9500 or $9900, rather than the correct value of $9400. T o  - guard against this possibility, the system must maintain some form of supervision. But supervision is difficult to provide because data may be accessed by many different application programs that have not been coordinated previously. - As another example, suppose a registration program maintains a count of students registered for a course in order to enforce limits on the number of students registered. When a student registers, the program reads the current count for the courses, verifies that the count is not already at the limit, adds one to the count, and stores the count back in the database. Suppose two students register concurrently, with the count at 39",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                54,
+                55
+            ]
+        },
+        {
+            "rank": 3,
+            "idx": 10,
+            "chunk": "Description: Chapter 1 Section 1.2 Purpose of Database Systems Content: . Suppose two students register concurrently, with the count at 39. The two program executions may both read the value 39, and both would then write back 40, leading to an incorrect increase of only 1, even though two students successfully registered for the course and the count should be 41. Furthermore, suppose the course registration limit was 40; in the above case both students would be able to register, leading to a violation of the limit of 40 students. - Security problems. Not every user of the database system should be able to access all the data. For example, in a university, payroll personnel need to see only that part of the database that has financial information. They do not need access to information about academic records. But since application programs are added to the file-processing system in an ad hoc manner, enforcing such security constraints is difficult. Page 8 These difficulties, among others, prompted both the initial development of database systems and the transition of file-based applications to database systems, back in the 1960s and 1970s.  In what follows, we shall see the concepts and algorithms that enable database systems to solve the problems with file-processing systems. In most of this book, we use a university organization as a running example of a typical data-processing application.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                55,
+                56
+            ]
+        },
+        {
+            "rank": 4,
+            "idx": 11,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Content: A database system is a collection of interrelated data and a set of programs that allow users to access and modify these data. A major purpose of a database system is to provide users with an abstract view of the data. That is, the system hides certain details of how the data are stored and maintained.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                56
+            ]
+        },
+        {
+            "rank": 5,
+            "idx": 12,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.1 Data Models Content: Underlying the structure of a database is the data model : a collection of conceptual tools for describing data, data relationships, data semantics, and consistency constraints. There are a number of different data models that we shall cover in the text. The data models can be classified into four different categories: - Relational Model . The relational model uses a collection of tables to represent both data and the relationships among those data. Each table has multiple columns, and each column has a unique name. Tables are also known as relations . The relational model is an example of a record-based model. Record-based models are so named because the database is structured in fixed-format records of several types. Each table contains records of a particular type. Each record type defines a fixed number of fields, or attributes. The columns of the table correspond to the attributes of the record type. The relational data model is the most widely used data model, and a vast majority of current  - database systems are based on the relational model. Chapter 2 and Chapter 7 cover the relational model in detail. - Entity-Relationship Model . The entity-relationship (ER) data model uses a collection of basic objects, called entities , and relationships among these objects. An entity is a \"thing\" or \"object\" in the real world that is distinguishable from other objects. The entityrelationship model is widely used in database design. Chapter 6 explores it in detail. - Semi-structured Data Model . The semi-structured data model permits the specification of data where individual data items of the same type may have different sets of attributes. This is in contrast to the data models mentioned earlier, where every data item of a particular type must have the same set of attributes. JSON and Extensible Markup Language ( XML ) are widely used semi-structured data representations. Semistructured data models are explored in detail in Chapter 8",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                56,
+                57
+            ]
+        },
+        {
+            "rank": 6,
+            "idx": 13,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.1 Data Models Content: . JSON and Extensible Markup Language ( XML ) are widely used semi-structured data representations. Semistructured data models are explored in detail in Chapter 8. - Page 9 Object-Based Data Model . Object-oriented programming (especially in Java, C++, or C#) has become the dominant software-development methodology. This led initially to the development of a distinct object-oriented data model, but today the concept of objects is well integrated into relational databases. Standards exist to store objects in relational tables. Database systems allow procedures to be stored in the database system and executed by the database system. This can be seen as extending the relational model with notions of encapsulation, methods, and object identity. Object-based data models are summarized in Chapter 8.  A large portion of this text is focused on the relational model because it serves as the foundation for most database applications.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                57,
+                58
+            ]
+        },
+        {
+            "rank": 7,
+            "idx": 14,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.2 Relational Data Model Content: In the relational model, data are represented in the form of tables. Each table has multiple columns, and each column has a unique name. Each row of the table represents one piece of information. Figure 1.1 presents a sample relational database comprising two tables: one shows details of university instructors and the other shows details of the various university departments.  Figure 1.1 A sample relational database. The first table, the instructor table, shows, for example, that an instructor named Einstein with ID 22222 is a member of the Physics department and has an annual salary of $95,000. The second table, department , shows, for example, that the Biology department is located in the Watson building and has a budget of $90,000. Of course, a real-world university would have many more departments and instructors. We use small tables in the text to illustrate concepts. A larger example for the same schema is available online.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                58,
+                59
+            ]
+        },
+        {
+            "rank": 8,
+            "idx": 15,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.3 Data Abstraction Content: For the system to be usable, it must retrieve data efficiently. The need for efficiency has led database system developers to use complex data structures to represent data in the database. Since many database-system users are not computer trained, developers hide the complexity from users through several levels of data abstraction , to simplify users' interactions with the system: - Physical level . The lowest level of abstraction describes how the data are actually stored. The physical level describes complex low-level data structures in detail. - Page 10 Logical level . The next-higher level of abstraction describes what data are stored in the database, and what relationships exist among those data. The logical level thus describes the entire database in terms of a small number of relatively simple structures. Although implementation of the simple structures at the logical level may involve complex physical-level structures, the user of the logical level does not need to be aware of this complexity. This is referred to as physical data independence . Database administrators, who must decide what information to keep in the database, use the logical level of abstraction. - View level . The highest level of abstraction describes only part of the entire database. Even though the logical level uses simpler structures, complexity remains because of the variety of information stored in a large database. Many users of the database system do not need all this information; instead, they need to access  - only a part of the database. The view level of abstraction exists to simplify their interaction with the system. The system may provide many views for the same database. Figure 1.2 shows the relationship among the three levels of abstraction. ## Figure 1.2 The three levels of data abstraction",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 18.12890764564868,
+            "page_number": [
+                60,
+                61
+            ]
+        },
+        {
+            "rank": 9,
+            "idx": 16,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.3 Data Abstraction Content: . The system may provide many views for the same database. Figure 1.2 shows the relationship among the three levels of abstraction. ## Figure 1.2 The three levels of data abstraction. Page 11 An important feature of data models, such as the relational model, is that they hide such low-level implementation details from not just database users, but even from database-application developers. The database system allows application developers to store and retrieve data using the abstractions of the data model, and converts the abstract operations into operations on the low-level implementation. An analogy to the concept of data types in programming languages may clarify the distinction among levels of abstraction. Many high-level programming languages support the notion of a structured type. We may describe the type of a record abstractly as follows: 1 ## type instructor = record ## ID : char (5);  name : char (20); dept\\_name : char (20); salary : numeric (8,2); ## end; This code defines a new record type called instructor with four fields. Each field has a name and a type associated with it. For example, char (20) specifies a string with 20 characters, while numeric (8,2) specifies a number with 8 digits, two of which are to the right of the decimal point. A university organization may have several such record types, including: - department , with fields dept\\_name , building , and budget . - course , with fields course id , title , dept name , and credits . - student , with fields ID , name , dept\\_name , and tot\\_cred . Page 12 At the physical level, an instructor , department , or student record can be described as a block of consecutive bytes. The compiler hides this level of detail from programmers. Similarly, the database system hides many of the lowest-level storage details from database programmers. Database administrators, on the other hand, may be aware of certain details of the physical organization of the data",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                61,
+                62
+            ]
+        },
+        {
+            "rank": 10,
+            "idx": 17,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.3 Data Abstraction Content: . Database administrators, on the other hand, may be aware of certain details of the physical organization of the data. For example, there are many possible ways to store tables in files. One way is to store a table as a sequence of records in a file, with a special character (such as a comma) used to delimit the different attributes of a record, and another special character (such as a new-line character) may be used to delimit records. If all attributes have fixed length, the lengths of attributes may be stored separately, and delimiters may be omitted from the file. Variable length attributes could be handled by storing the length, followed by the data. Databases use a type of data structure called an index to support efficient retrieval of records; these too form part of the physical level. At the logical level, each such record is described by a type definition, as in the previous code segment. The interrelationship of these record types is also defined at the logical level; a requirement that the dept\\_name value of an instructor record must appear in the department table is an example of such an interrelationship. Programmers using a programming language work at this level of abstraction. Similarly, database administrators usually work at this level of abstraction. Finally, at the view level, computer users see a set of application programs that hide details of the data types. At the view level, several views of the database are defined, and a database user sees some or all of these views. In addition to hiding details of the logical level of the database, the views also provide a security mechanism to prevent users from accessing certain parts of the database. For example, clerks in the university registrar office can see only that part of the database that has information about students; they cannot access information about salaries of instructors.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 9.463216104175643,
+            "page_number": [
+                62
+            ]
+        },
+        {
+            "rank": 11,
+            "idx": 18,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.4 Instances and Schemas Content: Databases change over time as information is inserted and deleted. The collection of information stored in the database at a particular moment is called an instance of the database. The overall design of the database is called the database schema . The concept of database schemas and instances can be understood by analogy to a program written in a programming language. A database schema corresponds to the variable declarations (along with associated type definitions) in a program. Each variable has a particular value at a given instant. The values of the  Page 13 variables in a program at a point in time correspond to an instance of a database schema. Database systems have several schemas, partitioned according to the levels of abstraction. The physical schema describes the database design at the physical level, while the logical schema describes the database design at the logical level. A database may also have several schemas at the view level, sometimes called subschemas , that describe different views of the database. Of these, the logical schema is by far the most important in terms of its effect on application programs, since programmers construct applications by using the logical schema. The physical schema is hidden beneath the logical schema and can usually be changed easily without affecting application programs. Application programs are said to exhibit physical data independence if they do not depend on the physical schema and thus need not be rewritten if the physical schema changes. We also note that it is possible to create schemas that have problems, such as unnecessarily duplicated information. For example, suppose we store the department budget as an attribute of the instructor record. Then, whenever the value of the budget for a department (say the Physics department) changes, that change must be reflected in the records of all instructors associated with the department",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 11.454898269153334,
+            "page_number": [
+                63,
+                64
+            ]
+        },
+        {
+            "rank": 12,
+            "idx": 19,
+            "chunk": "Description: Chapter 1 Section 1.3 View of Data Section 1.3.4 Instances and Schemas Content: . Then, whenever the value of the budget for a department (say the Physics department) changes, that change must be reflected in the records of all instructors associated with the department. In Chapter 7, we shall study how to distinguish good schema designs from bad schema designs. Traditionally, logical schemas were changed infrequently, if at all. Many newer database applications, however, require more flexible logical schemas where, for example, different records in a single relation may have different attributes.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                64
+            ]
+        },
+        {
+            "rank": 13,
+            "idx": 20,
+            "chunk": "Description: Chapter 1 Section 1.4 Database Languages Content: A database system provides a data-definition language ( DDL ) to specify the database schema and a datamanipulation language ( DML ) to express database queries and updates. In practice, the data-definition and data-manipulation languages are not two separate languages; instead they simply form parts of a single database language, such as the SQL language. Almost all relational database systems employ the SQL language, which we cover in great detail in Chapter 3, Chapter 4, and Chapter 5.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                65
+            ]
+        },
+        {
+            "rank": 14,
+            "idx": 21,
+            "chunk": "Description: Chapter 1 Section 1.4 Database Languages Section 1.4.1 Data-Definition Language Content: We specify a database schema by a set of definitions expressed by a special language called a data-definition language (DDL). The DDL is also used to specify additional properties of the data. We specify the storage structure and access methods used by the database system by a set of statements in a special type of DDL called a data storage and definition language. These statements define the implementation details of the database schemas, which are usually hidden from the users. The data values stored in the database must satisfy certain consistency constraints. For example, suppose the university requires that the account balance of a department must never be negative. The DDL provides facilities to specify such constraints. The database system checks these constraints every time the database is updated. In general, a constraint can be an arbitrary predicate pertaining to the database. However, arbitrary predicates may be costly to test. Thus, database systems implement only those integrity constraints that can be tested with minimal overhead: - Domain Constraints . A domain of possible values must be associated with every attribute (for example,  - Page 14 integer types, character types, date/time types). Declaring an attribute to be of a particular domain acts as a constraint on the values that it can take. Domain constraints are the most elementary form of integrity constraint. They are tested easily by the system whenever a new data item is entered into the database. - Referential Integrity . There are cases where we wish to ensure that a value that appears in one relation for a given set of attributes also appears in a certain set of attributes in another relation (referential integrity). For example, the department listed for each course must be one that actually exists in the university. More precisely, the dept\\_name value in a course record must appear in the dept\\_name attribute of some record of the department relation",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                65,
+                66
+            ]
+        },
+        {
+            "rank": 15,
+            "idx": 22,
+            "chunk": "Description: Chapter 1 Section 1.4 Database Languages Section 1.4.1 Data-Definition Language Content: . More precisely, the dept\\_name value in a course record must appear in the dept\\_name attribute of some record of the department relation. Database modifications can cause violations of referential integrity. When a referentialintegrity constraint is violated, the normal procedure is to reject the action that caused the violation. - Authorization . We may want to differentiate among the users as far as the type of access they are permitted on various data values in the database. These differentiations are expressed in terms of authorization , the most common being: read authorization , which allows reading, but not modification, of data; insert authorization , which allows insertion of new data, but not modification of existing data; update authorization , which allows modification, but not deletion, of data; and delete authorization , which allows deletion of data. We may assign the user all, none, or a combination of these types of authorization. The processing of DDL statements, just like those of any other programming language, generates some output. The output of the DDL is placed in the data dictionary , which contains metadata - that is, data about data. The data dictionary is considered to be a special type of table that can be accessed and updated only by the database system itself (not a regular user). The database system consults the data dictionary before reading or modifying actual data.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.426159664112239e-05,
+            "page_number": [
+                66
+            ]
+        }
+    ],
+    "full_response": "scores = {eid: s for eid, s in scores.items() if s >= 2}\n<<<ENDANSWER>>",
+    "faiss_only_idxs": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+    ],
+    "kg_only_idxs": [],
+    "kg_added_chunks": [],
+    "faiss_only_chunks": []
+}

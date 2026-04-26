@@ -1,0 +1,326 @@
+{
+    "timestamp": "2026-04-25T23:12:29.017028",
+    "query": "How does a cascading rollback happen and why does strict two-phase locking avoid it?",
+    "chat_request_params": {
+        "system_prompt": "baseline",
+        "max_tokens": 400
+    },
+    "config_state": {
+        "chunk_mode": "recursive_sections",
+        "chunk_size": 2000,
+        "chunk_overlap": 200,
+        "top_k": 15,
+        "num_candidates": 75,
+        "embed_model": "models/Qwen3-Embedding-4B-Q5_K_M.gguf",
+        "ensemble_method": "rrf",
+        "rrf_k": 60,
+        "ranker_weights": {
+            "faiss": 0.7,
+            "bm25": 0,
+            "index_keywords": 0,
+            "kg": 0.3
+        },
+        "rerank_mode": "cross_encoder",
+        "rerank_top_k": 5,
+        "max_gen_tokens": 400,
+        "gen_model": "models/qwen2.5-1.5b-instruct-q5_k_m.gguf",
+        "system_prompt_mode": "baseline",
+        "disable_chunks": false,
+        "use_golden_chunks": false,
+        "output_mode": "terminal",
+        "metrics": [
+            "all"
+        ],
+        "use_hyde": false,
+        "hyde_max_tokens": 300,
+        "use_double_prompt": false,
+        "enable_history": true,
+        "max_history_turns": 3,
+        "use_indexed_chunks": false,
+        "extracted_index_path": "data/extracted_index.json",
+        "page_to_chunk_map_path": "index/sections/textbook_index_page_to_chunk_map.json",
+        "enable_topic_extraction": true
+    },
+    "top_k": 15,
+    "retrieved_chunks": [
+        {
+            "rank": 1,
+            "idx": 1095,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.3 The Two-Phase Locking Protocol Content: . Each transaction observes the two-phase locking protocol, but the failure of T 5 after the read(A) step of T 7 leads to cascading rollback of T 6 and T 7 . Figure 18.8 Partial schedule under two-phase locking. Cascading rollbacks can be avoided by a modification of two-phase locking called the strict two-phase locking protocol . This protocol requires not only that locking be two phase, but also that all exclusive-mode locks taken by a transaction be held until that transaction commits. This requirement ensures that any data written by an uncommitted transaction are locked in exclusive mode until the transaction commits, preventing any other transaction from reading the data.  Another variant of two-phase locking is the rigorous twophase locking protocol , which requires that all locks be held until the transaction commits. We can easily verify that, with rigorous two-phase locking, transactions can be serialized in the order in which they commit. Consider the following two transactions, for which we have shown only some of the significant read and write operations: T 8 : read( a 1 ); read( a 2 ); ... read(a n ); write( a 1 ). T 9 : read( a 1 ); read( a 2 ); display( a 1 + a 2 ). Page 843 If we employ the two-phase locking protocol, then T 8 must lock a 1 in exclusive mode. Therefore, any concurrent execution of both transactions amounts to a serial execution. Notice, however, that T 8 needs an exclusive lock on a 1 only at the end of its execution, when it writes a 1 . Thus, if T 8 could initially lock a 1 in shared mode, and then could later change the lock to exclusive mode, we could get more concurrency, since T 8 and T 9 could access a 1 and a 2 simultaneously. This observation leads us to a refinement of the basic twophase locking protocol, in which lock conversions are allowed. We shall provide a mechanism for upgrading a shared lock to an exclusive lock, and downgrading an exclusive lock to a shared lock",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 34.65980734670832,
+            "page_number": [
+                1296,
+                1297
+            ]
+        },
+        {
+            "rank": 2,
+            "idx": 1094,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.3 The Two-Phase Locking Protocol Content: One protocol that ensures serializability is the two-phase locking protocol . This protocol requires that each transaction issue lock and unlock requests in two phases: 1. Growing phase . A transaction may obtain locks, but may not release any lock. 2. Shrinking phase . A transaction may release locks, but may not obtain any new locks. Initially, a transaction is in the growing phase. The transaction acquires locks as needed. Once the transaction releases a lock, it enters the shrinking phase, and it can issue no more lock requests. For example, transactions T 3 and T 4 are two phase. On the other hand, transactions T 1 and T 2 are not two phase. Note that the unlock instructions do not need to appear at the end of the transaction. For example, in the case of transaction T 3 , we could move the unlock( B ) instruction to just after the lock-X( A ) instruction and still retain the twophase locking property. We can show that the two-phase locking protocol ensures conflict serializability. Consider any transaction. The point in the schedule where the transaction has obtained its final lock (the end of its growing phase) is called the lock point of the transaction. Now, transactions can be ordered according to their lock points-this ordering is, in fact, a serializability ordering for the transactions. We leave the proof as an exercise for you to do (see Practice Exercise 18.1).  Two-phase locking does not ensure freedom from deadlock. Observe that transactions T 3 and T 4 are two phase, but, in schedule 2 (Figure 18.7), they are deadlocked. Recall from Section 17.7.2 that, in addition to being serializable, schedules should be cascadeless. Cascading rollback may occur under two-phase locking. As an illustration, consider the partial schedule of Figure 18.8. Each transaction observes the two-phase locking protocol, but the failure of T 5 after the read(A) step of T 7 leads to cascading rollback of T 6 and T 7",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 34.118705438471366,
+            "page_number": [
+                1295,
+                1296
+            ]
+        },
+        {
+            "rank": 3,
+            "idx": 1091,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.1 Locks Content: . Other schedules are possible. T 4 will not print out an inconsistent result in any of them; we shall see why later. Page 839 Unfortunately, locking can lead to an undesirable situation. Consider the partial schedule of Figure 18.7 for T 3 and T 4 . Since T 3 is holding an exclusive-mode lock on B and T 4 is requesting a shared-mode lock on B , T 4 is waiting for T 3 to unlock B . Similarly, since T 4 is holding a shared-mode lock on A and T 3 is requesting an exclusivemode lock on A , T 3 is waiting for T 4 to unlock A . Thus, we have arrived at a state where neither of these transactions can ever proceed with its normal execution. This situation is called deadlock . When deadlock occurs, the system must roll back one of the two transactions. Once a transaction has been rolled back, the data items that were locked by that transaction are unlocked. These data items are then available to the other transaction, which can continue with its execution. We shall return to the issue of deadlock handling in Section 18.2. Figure 18.7 Schedule 2.  Page 840 If we do not use locking, or if we unlock data items too soon after reading or writing them, we may get inconsistent states. On the other hand, if we do not unlock a data item before requesting a lock on another data item, deadlocks may occur. There are ways to avoid deadlock in some situations, as we shall see in Section 18.1.5. However, in general, deadlocks are a necessary evil associated with locking, if we want to avoid inconsistent states. Deadlocks are definitely preferable to inconsistent states, since they can be handled by rolling back transactions, whereas inconsistent states may lead to real-world problems that cannot be handled by the database system. We shall require that each transaction in the system follow a set of rules, called a locking protocol , indicating when a transaction may lock and unlock each of the data items. Locking protocols restrict the number of possible schedules",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 17.825979239130714,
+            "page_number": [
+                1292,
+                1293
+            ]
+        },
+        {
+            "rank": 4,
+            "idx": 1101,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.5 Graph-Based Protocols Content: . 4. A data item that has been locked and unlocked by T i cannot subsequently be relocked by T i . All schedules that are legal under the tree protocol are conflict serializable. To illustrate this protocol, consider the database graph of Figure 18.11. The following four transactions follow the tree  Page 847 protocol on this graph. We show only the lock and unlock instructions: Figure 18.11 Tree-structured database graph. T 10 : lock-X( B ); lock-X( E ); lock-X( D ); unlock( B ); unlock( E ); lock-X( G ); unlock( D ); unlock( G ). T 11 : lock-X( D ); lock-X( H ); unlock( D ); unlock( H ). T 12 : lock-X( B ); lock-X( E ); unlock( E ); unlock( B ). ). T 13 : lock-X( D ); lock-X( H ); unlock( D ); unlock( H One possible schedule in which these four transactions participated appears in Figure 18.12. Note that, during its execution, transaction T 10 holds locks on two disjoint subtrees.  Figure 18.12 Serializable schedule under the tree protocol. Observe that the schedule of Figure 18.12 is conflict serializable. It can be shown not only that the tree protocol ensures conflict serializability, but also that this protocol ensures freedom from deadlock. The tree protocol in Figure 18.12 does not ensure recoverability and cascadelessness. T o ensure recoverability and cascadelessness, the protocol can be modified to not permit release of exclusive locks until the end of the transaction. Holding exclusive locks until the end of the transaction reduces concurrency. Here is an alternative that improves concurrency, but ensures only recoverability: For each data item with an uncommitted write, we record which transaction performed the last write to the data item. Whenever a transaction T i performs a read of an uncommitted data item, we record a commit dependency of T i on the transaction that performed the last write to the data item",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 9.7687999792413e-05,
+            "page_number": [
+                1303,
+                1304,
+                1305
+            ]
+        },
+        {
+            "rank": 5,
+            "idx": 1456,
+            "chunk": "Description: Chapter 23 Section 23.2  Commit Protocols Section 23.2.1 Two-Phase Commit Content: We first describe how the two-phase commit protocol (2PC) operates during normal operation, then describe how it handles failures and finally how it carries out recovery and concurrency control. Consider a transaction T initiated at node Ni , where the transaction coordinator is Ci , .",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 17.16976539932473,
+            "page_number": [
+                1711
+            ]
+        },
+        {
+            "rank": 6,
+            "idx": 1088,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.1 Locks Content: There are various modes in which a data item may be locked. In this section, we restrict our attention to two modes: 1. Shared . If a transaction T i has obtained a sharedmode lock (denoted by S) on item Q, then T i can read, but cannot write, Q. 2. Exclusive . If a transaction T i has obtained an exclusive-mode lock (denoted by X) on item Q , then T i can both read and write Q . Page 836 We require that every transaction request a lock in an appropriate mode on data item Q , depending on the types of operations that it will perform on Q . The transaction makes the request to the concurrency-control manager. The transaction can proceed with the operation only after the concurrency-control manager grants the lock to the transaction. The use of these two lock modes allows multiple transactions to read a data item but limits write access to just one transaction at a time. To state this more generally, given a set of lock modes, we can define a compatibility function on them as follows: Let A and B represent arbitrary lock modes. Suppose that a transaction T i requests a lock of mode A on item Q on which transaction T j ( T i ≠ T j ) currently holds a lock of mode B . If transaction T i can be granted a lock on Q immediately, in spite of the presence of the mode B lock, then we say mode A is compatible with mode B . Such a function can be represented conveniently by a matrix. The compatibility relation between the two modes of locking discussed in this section appears in the matrix comp of Figure 18.1. An element comp( A, B ) of the matrix has the value true if and only if mode A is compatible with mode B .  Figure 18.1 Lock-compatibility matrix comp. Note that shared mode is compatible with shared mode, but not with exclusive mode. At any time, several sharedmode locks can be held simultaneously (by different transactions) on a particular data item",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 9.557755021484882e-05,
+            "page_number": [
+                1275,
+                1288
+            ]
+        },
+        {
+            "rank": 7,
+            "idx": 1090,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.1 Locks Content: . If these two transactions are executed serially, either in the order T 1 , T 2 or the order T 2 , T 1 , then transaction T 2 will display the value $300. If, however, these transactions are executed concurrently, then schedule 1, in Figure 18.4, is possible. In this case, transaction T 2 displays $250, which is incorrect. The reason for this mistake is that the transaction T 1 unlocked data item B too early, as a result of which T 2 saw an inconsistent state. Figure 18.4 Schedule 1. The schedule shows the actions executed by the transactions, as well as the points at which the concurrencycontrol manager grants the locks. The transaction making a lock request cannot execute its next action until the concurrency-control manager grants the lock. Hence, the lock must be granted in the interval of time between the lock-request operation and the following action of the transaction. Exactly when within this interval the lock is granted is not important; we can safely assume that the lock is granted just before the following action of the transaction. We shall therefore drop the column depicting the actions of the concurrency-control manager from all schedules depicted in the rest of the chapter. We let you infer when locks are granted.  Page 838 Suppose now that unlocking is delayed to the end of the transaction. Transaction T 3 corresponds to T 1 with unlocking delayed (Figure 18.5). Transaction T 4 corresponds to T 2 with unlocking delayed (Figure 18.6). Figure 18.5 Transaction T 3 (transaction T 1 with unlocking delayed).  Figure 18.6 Transaction T 4 (transaction T 2 with unlocking delayed). You should verify that the sequence of reads and writes in schedule 1, which lead to an incorrect total of $250 being displayed, is no longer possible with T 3 and T 4 . Other schedules are possible. T 4 will not print out an inconsistent result in any of them; we shall see why later",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 9.360343041946951e-05,
+            "page_number": [
+                1290,
+                1291,
+                1292
+            ]
+        },
+        {
+            "rank": 8,
+            "idx": 1096,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.3 The Two-Phase Locking Protocol Content: . We shall provide a mechanism for upgrading a shared lock to an exclusive lock, and downgrading an exclusive lock to a shared lock. We denote conversion from shared to exclusive modes by upgrade , and from exclusive to shared by downgrade . Lock conversion cannot be allowed arbitrarily. Rather, upgrading can take place in only the growing phase, whereas downgrading can take place in only the shrinking phase. Returning to our example, transactions T 8 and T 9 can run concurrently under the refined two-phase locking protocol, as shown in the incomplete schedule of Figure 18.9, where only some of the locking instructions are shown.  Figure 18.9 Incomplete schedule with a lock conversion. Note that a transaction attempting to upgrade a lock on an item Q may be forced to wait. This enforced wait occurs if Q is currently locked by another transaction in shared mode. Just like the basic two-phase locking protocol, two-phase locking with lock conversion generates only conflictserializable schedules, and transactions can be serialized by their lock points. Further, if exclusive locks are held until the end of the transaction, the schedules are cascadeless. For a set of transactions, there may be conflict-serializable schedules that cannot be obtained through the two-phase locking protocol. However, to obtain conflict-serializable schedules through non-two-phase locking protocols, we need either to have additional information about the transactions or to impose some structure or ordering on the set of data items in the database. We shall see examples when we consider other locking protocols later in this chapter.  Strict two-phase locking and rigorous two-phase locking (with lock conversions) are used extensively in commercial database systems",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 23.3134438114794,
+            "page_number": [
+                1297,
+                1298,
+                1299
+            ]
+        },
+        {
+            "rank": 9,
+            "idx": 1100,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.5 Graph-Based Protocols Content: As noted in Section 18.1.3, if we wish to develop protocols that are not two phase, we need additional information on how each transaction will access the database. There are various models that can give us the additional information, each differing in the amount of information provided. The simplest model requires that we have prior knowledge about the order in which the database items will be accessed. Given such information, it is possible to construct locking protocols that are not two phase, but that, nevertheless, ensure conflict serializability. To acquire such prior knowledge, we impose a partial ordering → on the set D = { d 1 , d 2 ,..., d h } of all data items. If d i → d j, then any transaction accessing both d i and dj must access d i before accessing d j . This partial ordering may be the result of either the logical or the physical organization of the data, or it may be imposed solely for the purpose of concurrency control. The partial ordering implies that the set D may now be viewed as a directed acyclic graph, called a database graph . In this section, for the sake of simplicity, we will restrict our attention to only those graphs that are rooted trees. We shall present a simple protocol, called the tree protocol, which is restricted to employ only exclusive locks. References to other, more complex, graph-based locking protocols are in the online bibliographical notes. In the tree protocol , the only lock instruction allowed is lock-X. Each transaction T i can lock a data item at most once, and must observe the following rules:  1. The first lock by T i may be on any data item. 2. Subsequently, a data item Q can be locked by T i only if the parent of Q is currently locked by T i . 3. Data items may be unlocked at any time. 4. A data item that has been locked and unlocked by T i cannot subsequently be relocked by T i . All schedules that are legal under the tree protocol are conflict serializable",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 8.857969040706174e-05,
+            "page_number": [
+                1302,
+                1303
+            ]
+        },
+        {
+            "rank": 10,
+            "idx": 1128,
+            "chunk": "Description: Chapter 18 Section 18.5  Timestamp-Based Protocols Section 18.5.2 The Timestamp-Ordering Protocol Content: . Thus, in schedule 3 of Figure 18.17, TS( T 25 ) &lt; TS( T 26 ), and the schedule is possible under the timestamp protocol. Figure 18.17 Schedule 3. We note that the preceding execution can also be produced by the two-phase locking protocol. There are, however, schedules that are possible under the two-phase locking protocol, but are not possible under the timestamp protocol, and vice versa (see Exercise 18.27). The timestamp-ordering protocol ensures conflict serializability. This is because conflicting operations are processed in timestamp order. The protocol ensures freedom from deadlock, since no transaction ever waits. However, there is a possibility of starvation of long transactions if a sequence of conflicting short transactions causes repeated restarting of the long transaction. If a transaction is suffering from repeated restarts, conflicting transactions need to be temporarily blocked to enable the transaction to finish.  The protocol can generate schedules that are not recoverable. However, it can be extended to make the schedules recoverable, in one of several ways: - Recoverability and cascadelessness can be ensured by performing all writes together at the end of the transaction. The writes must be atomic in the following sense: While the writes are in progress, no transaction is permitted to access any of the data items that have been written. - Page 864 Recoverability and cascadelessness can also be guaranteed by using a limited form of locking, whereby reads of uncommitted items are postponed until the transaction that updated the item commits (see Exercise 18.28). - Recoverability alone can be ensured by tracking uncommitted writes and allowing a transaction T i to commit only after the commit of any transaction that wrote a value that T i read. Commit dependencies, outlined in Section 18.1.5, can be used for this purpose",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 15.885676306847332,
+            "page_number": [
+                1330,
+                1331
+            ]
+        },
+        {
+            "rank": 11,
+            "idx": 1132,
+            "chunk": "Description: Chapter 18 Section 18.6  Validation-Based Protocols Content: In cases where a majority of transactions are read-only transactions, the rate of conflicts among transactions may be low. Thus, many of these transactions, if executed without the supervision of a concurrency-control scheme, would nevertheless leave the system in a consistent state. A concurrency-control scheme imposes overhead of code execution and possible delay of transactions. It may be better to use an alternative scheme that imposes less overhead. A difficulty in reducing the overhead is that we do not know in advance which transactions will be involved in a conflict. T o gain that knowledge, we need a scheme for monitoring the system. The validation protocol requires that each transaction T i executes in two or three different phases in its lifetime, depending on whether it is a read-only or an update transaction. The phases are, in order: 1. Read phase . During this phase, the system executes transaction T i . It reads the values of the various data items and stores them in variables local to T i . It performs all write operations on temporary local variables, without updates of the actual database. 2. Validation phase . The validation test (described below) is applied to transaction T i . This determines whether - T i is allowed to proceed to the write phase without causing a  violation of serializability. If a transaction fails the validation test, the system aborts the transaction. 3. Write phase . If the validation test succeeds for transaction T i , the temporary local variables that hold the results of any write operations performed by T i are copied to the database. Read-only transactions omit this phase. Each transaction must go through the phases in the order shown. However, phases of concurrently executing transactions can be interleaved. To perform the validation test, we need to know when the various phases of transactions took place. We shall, therefore, associate three different timestamps with each transaction T i : 1",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 8.429943587706606e-05,
+            "page_number": [
+                1334,
+                1335
+            ]
+        },
+        {
+            "rank": 12,
+            "idx": 1173,
+            "chunk": "Description: Chapter 18 Section 18.10  Advanced Topics in Concurrency Control Section 18.10.3 Concurrency Control in Main-Memory Databases Content: . There are other solutions that do not require a double compare-andswap, but are more complicated. Deletion from the tail of the list (to implement a queue) as well as more complex data structures such as hash indices and search trees can also be implemented in a latch-free manner. It is best to use latch-free data structure implementations (more often referred to as lockfree data structure implementations) that are provided by standard libraries, such as the Boost library for C++, or the ConcurrentLinkedQueue class in Java; do not build your own, since you may introduce bugs due to 'race conditions' between concurrent accesses, that can be very hard to detect or debug. Since today's multiprocessor CPUs have a large number of cores, latch-free implementations have been found to significantly outperform implementations that obtain latches, in the context of in-memory indices and other inmemory data structures",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 0.4445101269848193,
+            "page_number": [
+                1373
+            ]
+        },
+        {
+            "rank": 13,
+            "idx": 1306,
+            "chunk": "Description: Chapter 20 Section 20.6  Transaction Processing in Parallel and Distributed Systems Content: Atomicity of transactions is an important issue in building a parallel and distributed database system. If a transaction runs across two nodes, unless the system designers are  Page 990 careful, it may commit at one node and abort at another, leading to an inconsistent state. Transaction commit protocols ensure such a situation cannot arise. The twophase commit protocol (2PC) is the most widely used of these protocols. The 2PC protocol is described in detail in Section 23.2.1, but the key ideas are as follows: The basic idea behind 2PC is for each node to execute the transaction until it enters the partially committed state, and then leave the commit decision to a single coordinator node; the transaction is said to be in the ready state at a node at this point. The coordinator decides to commit the transaction only if the transaction reaches the ready state at every node where it executed; otherwise (e.g., if the transaction aborts at any node), the coordinator decides to abort the transaction. Every node where the transaction executed must follow the decision of the coordinator. If a node fails when a transaction is in ready state, when the node recovers from failure it should be in a position to either commit or abort the transaction, depending on the decision of the coordinator. Concurrency control is another issue in parallel and distributed databases. Since a transaction may access data items at several nodes, transaction managers at several nodes may need to coordinate to implement concurrency control. If locking is used, locking can be performed locally at the nodes containing accessed data items, but there is also a possibility of deadlock involving transactions originating at multiple nodes. Therefore deadlock detection needs to be carried out across multiple nodes. Failures are more common in distributed systems since not only may computers fail, but communication links may also fail",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 8.347355640880457e-05,
+            "page_number": [
+                1531,
+                1532
+            ]
+        },
+        {
+            "rank": 14,
+            "idx": 1135,
+            "chunk": "Description: Chapter 18 Section 18.6  Validation-Based Protocols Content: . FinishTS (T k ) &lt; StartTS ( T i ). Since T k completes its execution before T i started, the serializability order is indeed maintained. 2. The set of data items written by T k does not intersect with the set of data items read by T i , and T k completes its write phase before T i starts its validation phase ( StartTS ( T i ) &lt; FinishTS (T k ) &lt; ValidationTS ( T i )). This condition ensures that the writes of T k and T i do not overlap. Since the writes of T k do not affect the read of T i , and since T i cannot affect the read of T k , the serializability order is indeed maintained.  As an illustration, consider again transactions T 25 and T 26 . Suppose that TS( T 25 ) &lt; TS( T 26 ). Then, the validation phase succeeds in the schedule 6 in Figure 18.19. Note that the writes to the actual variables are performed only after the validation phase of T 26 . Thus, T 25 reads the old values of B and A, and this schedule is serializable. Figure 18.19 Schedule 6, a schedule produced by using validation. The validation scheme automatically guards against cascading rollbacks, since the actual writes take place only after the transaction issuing the write has committed. However, there is a possibility of starvation of long transactions, due to a sequence of conflicting short transactions that cause repeated restarts of the long transaction. T o avoid starvation, conflicting transactions must be temporarily blocked to enable the long transaction to finish. Note also that the validation conditions result in a transaction T only being validated again the set of transactions T i that finished after T started, and, further, are serialized before T . T ransactions that finished before T started can be ignored in the validation tests",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 15.98393035217364,
+            "page_number": [
+                1337,
+                1338
+            ]
+        },
+        {
+            "rank": 15,
+            "idx": 1103,
+            "chunk": "Description: Chapter 18 Section 18.2  Deadlock Handling Content: A system is in a deadlock state if there exists a set of transactions such that every transaction in the set is waiting for another transaction in the set. More precisely, there exists a set of waiting transactions { T 0 , T 1 ,..., T n } such that T 0 is waiting for a data item that T 1 holds, and T 1 is waiting for a data item that T 2 holds, and ..., and T n-1 is waiting for a data item that T n holds, and T n is waiting for a data item that T 0 holds. None of the transactions can make progress in such a situation. The only remedy to this undesirable situation is for the system to invoke some drastic action, such as rolling back some of the transactions involved in the deadlock. Rollback of a transaction may be partial: That is, a transaction may be rolled back to the point where it obtained a lock whose release resolves the deadlock. There are two principal methods for dealing with the deadlock problem. We can use a deadlock prevention protocol to ensure that the system will never enter a deadlock state. Alternatively, we can allow the system to enter a deadlock state, and then try to recover by using a deadlock detection and deadlock recovery scheme. As we shall see, both methods may result in transaction rollback. Prevention is commonly used if the probability that the system would enter a deadlock state is relatively high; otherwise, detection and recovery are more efficient. Note that a detection and recovery scheme requires overhead that includes not only the run-time cost of maintaining the necessary information and of executing the detection algorithm, but also the potential losses inherent in  recovery from a deadlock.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 12.010784211052867,
+            "page_number": [
+                1306,
+                1307
+            ]
+        }
+    ],
+    "full_response": "A cascading rollback happens when a transaction fails and causes a rollback of other transactions that were dependent on the failed transaction. This can occur in a two-phase locking protocol if a transaction fails after acquiring a lock but before releasing it. Strict two-phase locking avoids this by requiring that all exclusive-mode locks taken by a transaction be held until that transaction commits. This ensures that any data written by an uncommitted transaction are locked in exclusive mode until the transaction commits, preventing any other transaction from reading the data. This prevents cascading rollback because it ensures that all transactions are serialized, and any data that are read by an uncommitted transaction are locked in exclusive mode until the transaction commits. This prevents other transactions from reading the data until the transaction that wrote the data commits. This is why strict two-phase locking avoids cascading rollback.\n\n<<<ENDANSWER>>",
+    "faiss_only_idxs": [
+        1095,
+        1094,
+        1091,
+        1101,
+        1456,
+        1088,
+        1090,
+        1096,
+        1100,
+        1128,
+        1132,
+        1306,
+        1135,
+        1103,
+        1097
+    ],
+    "kg_only_idxs": [
+        1623,
+        1131,
+        1069,
+        1490,
+        1140,
+        1173,
+        1047,
+        1114,
+        1115,
+        1116,
+        1150,
+        1503
+    ],
+    "kg_added_chunks": [
+        {
+            "idx": 1131,
+            "kg_score": 0.5555555555555556,
+            "chunk": "Description: Chapter 18 Section 18.5  Timestamp-Based Protocols Section 18.5.3 Thomas' Write Rule Content: . Hence, the system rejects the write operation and rolls T i back. 2. If TS( T i ) &lt; W-ti"
+        },
+        {
+            "idx": 1069,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 17 Section 17.6  Serializability Content: . It is possible to have two schedules that produce the same outcome but that are not conflict equivalent. For example, consider transact"
+        },
+        {
+            "idx": 1490,
+            "kg_score": 0.4444444444444444,
+            "chunk": "Description: Chapter 23 Section 23.3  Concurrency Control in Distributed Databases Section 23.3.7 Distributed Validation Content: . It is too late for T i to be validated against T j . However, this p"
+        },
+        {
+            "idx": 1140,
+            "kg_score": 0.3333333333333333,
+            "chunk": "Description: Chapter 18 Section 18.7  Multiversion Schemes Section 18.7.2 Multiversion Two-Phase Locking Content: The multiversion two-phase locking protocol attempts to combine the advantages of mult"
+        },
+        {
+            "idx": 1173,
+            "kg_score": 0.4444444444444444,
+            "chunk": "Description: Chapter 18 Section 18.10  Advanced Topics in Concurrency Control Section 18.10.3 Concurrency Control in Main-Memory Databases Content: . There are other solutions that do not require a do"
+        },
+        {
+            "idx": 1047,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 17 Section 17.1  Transaction Concept Content: . Thus, each transaction is unaware of other transactions executing concurrently in the system. - Durability . After a transaction co"
+        },
+        {
+            "idx": 1623,
+            "kg_score": 0.5555555555555556,
+            "chunk": "Description: Chapter 25 Section 25.1  Performance Tuning Section 25.1.3 Tuning Levels Content: Tuning is typically done in the context of applications, and can be done at the database system layer, or"
+        },
+        {
+            "idx": 1114,
+            "kg_score": 0.4444444444444444,
+            "chunk": "Description: Chapter 18 Section 18.3  Multiple Granularity Content: . A more efficient way to gain this knowledge is to introduce a new class of lock modes, called intention lock modes . If a node is "
+        },
+        {
+            "idx": 1115,
+            "kg_score": 0.7777777777777778,
+            "chunk": "Description: Chapter 18 Section 18.3  Multiple Granularity Content: . - Transaction T i can lock a node Q in S or IS mode only if T i currently has the parent of Q locked in either IX or IS mode. - Tr"
+        },
+        {
+            "idx": 1116,
+            "kg_score": 0.5555555555555556,
+            "chunk": "Description: Chapter 18 Section 18.3  Multiple Granularity Content: . It is particularly useful in applications that include a mix of: - Short transactions that access only a few data items. - Long tr"
+        },
+        {
+            "idx": 1150,
+            "kg_score": 0.5555555555555556,
+            "chunk": "Description: Chapter 18 Section 18.8  Snapshot Isolation Section 18.8.3 Serializability Issues and Solutions Content: . Suppose that concurrently transaction T 37 withdraws $200 from the savings accou"
+        },
+        {
+            "idx": 1503,
+            "kg_score": 0.3333333333333333,
+            "chunk": "Description: Chapter 23 Section 23.4  Replication Section 23.4.3 Dealing with Failures Section 23.4.3.1 Robustness Using the Majority-Based Protocol Content: The majority-based approach to distributed"
+        }
+    ],
+    "faiss_only_chunks": [
+        {
+            "idx": 1097,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.3 The Two-Phase Locking Protocol Content: .  Strict two-phase locking and rigorous two-phase locking (with lock conversions) are"
+        }
+    ],
+    "is_contextualizing_query": true,
+    "contextualized_query": "How does a cascading rollback happen and why does strict two-phase locking avoid it?",
+    "original_query": "How does a cascading rollback happen and why does strict two-phase locking avoid it?",
+    "chat_history": [
+        {
+            "role": "user",
+            "content": "How does a dirty read occur and what isolation level prevents it"
+        },
+        {
+            "role": "assistant",
+            "content": "A dirty read occurs when a transaction reads data that has not yet been committed by another transaction. This can happen even with the serializable isolation level, which is designed to prevent dirty reads.\n\nThe isolation level prevents dirty reads by ensuring that transactions are executed in a way that guarantees that each transaction sees a consistent snapshot of the database. This means that transactions are executed in a way that prevents them from reading data that has not yet been committed by another transaction.\n\nIn other words, the isolation level ensures that each transaction sees a consistent view of the database, and that it does not read data that has been changed by another transaction. This prevents dirty reads, as each transaction sees a consistent snapshot of the database.\n\nThe isolation level is important because it ensures that transactions are executed in a way that prevents them from reading data that has not yet been committed by another transaction. This is important because it prevents transactions from reading data that has been changed by another transaction, which can lead to inconsistent results and data corruption."
+        }
+    ]
+}

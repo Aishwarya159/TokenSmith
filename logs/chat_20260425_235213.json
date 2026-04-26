@@ -1,0 +1,246 @@
+{
+    "timestamp": "2026-04-25T23:52:13.070562",
+    "query": "What is the difference between deferred and immediate modification in recovery and when would you choose each?",
+    "chat_request_params": {
+        "system_prompt": "baseline",
+        "max_tokens": 400
+    },
+    "config_state": {
+        "chunk_mode": "recursive_sections",
+        "chunk_size": 2000,
+        "chunk_overlap": 200,
+        "top_k": 15,
+        "num_candidates": 75,
+        "embed_model": "models/Qwen3-Embedding-4B-Q5_K_M.gguf",
+        "ensemble_method": "rrf",
+        "rrf_k": 60,
+        "ranker_weights": {
+            "faiss": 0.7,
+            "bm25": 0,
+            "index_keywords": 0,
+            "kg": 0.3
+        },
+        "rerank_mode": "cross_encoder",
+        "rerank_top_k": 5,
+        "max_gen_tokens": 400,
+        "gen_model": "models/qwen2.5-1.5b-instruct-q5_k_m.gguf",
+        "system_prompt_mode": "baseline",
+        "disable_chunks": false,
+        "use_golden_chunks": false,
+        "output_mode": "terminal",
+        "metrics": [
+            "all"
+        ],
+        "use_hyde": false,
+        "hyde_max_tokens": 300,
+        "use_double_prompt": false,
+        "enable_history": true,
+        "max_history_turns": 3,
+        "use_indexed_chunks": false,
+        "extracted_index_path": "data/extracted_index.json",
+        "page_to_chunk_map_path": "index/sections/textbook_index_page_to_chunk_map.json",
+        "enable_topic_extraction": true
+    },
+    "top_k": 15,
+    "retrieved_chunks": [
+        {
+            "rank": 1,
+            "idx": 1200,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.3 Concurrency Control and Recovery Content: . Similarly, immediate modification of the database is a natural fit with two-phase locking, but deferred modification can also be used with two-phase locking. ## Page 917 19.3.4 Transaction Commit We say that a transaction has committed when its commit log record, which is the last log record of the transaction, has been output to stable storage; at that point all earlier log records have already been output to stable storage. Thus, there is enough information in the log to ensure that even if there is a system crash, the updates of the transaction can be redone. If a system crash occurs before a log record &lt; T i commit &gt; is output to stable storage, transaction T i will be rolled back. Thus, the output of the block containing the commit log record is the single atomic action that results in a transaction getting committed. 1 With most log-based recovery techniques, including the ones we describe in this chapter, blocks containing the data items modified by a transaction do not have to be output to stable storage when the transaction commits but can be output some time later. We discuss this issue further in Section 19.5.2.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 36.73336371981451,
+            "page_number": [
+                1417
+            ]
+        },
+        {
+            "rank": 2,
+            "idx": 1201,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.5 Using the Log to Redo and Undo Transactions Content: We now provide an overview of how the log can be used to recover from a system crash and to roll back transactions during normal operation. However, we postpone details of the procedures for failure recovery and rollback to Section 19.4. Consider our simplified banking system. Let T 0 be a transaction that transfers $50 from account A to account B : Let T 1 be a transaction that withdraws $100 from account C: The portion of the log containing the relevant information concerning these two transactions appears in Figure 19.2. Figure 19.2 Portion of the system log corresponding to T 0 and T 1 . Figure 19.3 shows one possible order in which the actual outputs took place in both the database system and the log  Page 918 as a result of the execution of T 0 and T 1 . 2 Figure 19.3 State of system log and database corresponding to T 0 and T 1 . Using the log, the system can handle any failure that does not result in the loss of information in non-volatile storage. The recovery scheme uses two recovery procedures. Both these procedures make use of the log to find the set of data items updated by each transaction T i and their respective old and new values. - redo ( T i ). The procedure sets the value of all data items updated by transaction T i to the new values. The order in which updates are carried out by redo is important; when recovering from a system crash, if updates to a particular data item are applied in an order different from the order in which they were applied originally, the final state of that data item will have a wrong value. Most recovery algorithms, including the one we describe in Section 19.4, do not perform redo of each transaction separately; instead they perform a single scan of the log, during which redo actions are performed for each log record as it is encountered. This approach ensures the order of updates is preserved, and it is more efficient since the log needs to be read only once overall, instead of once per transaction",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 17.147751159678542,
+            "page_number": [
+                1418,
+                1419
+            ]
+        },
+        {
+            "rank": 3,
+            "idx": 1205,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.6 Checkpoints Content: When a system crash occurs, we must consult the log to determine those transactions that need to be redone and those that need to be undone. In principle, we need to search the entire log to determine this information. There are two major difficulties with this approach:  1. The search process is time-consuming. 2. Most of the transactions that, according to our algorithm, need to be redone have already written their updates into the database. Although redoing them will cause no harm, it will nevertheless cause recovery to take longer. To reduce these types of overhead, we introduce checkpoints . We describe below a simple checkpoint scheme that (a) does not permit any updates to be performed while the checkpoint operation is in progress, and (b) outputs all modified buffer blocks to disk when the checkpoint is performed. We discuss later how to modify the checkpointing and recovery procedures to provide more flexibility by relaxing both these requirements. A checkpoint is performed as follows: 1. Output onto stable storage all log records currently residing in main memory. 2. Output to the disk all modified buffer blocks. 3. Output onto stable storage a log record of the form &lt; checkpoint L&gt;, where L is a list of transactions active at the time of the checkpoint. Transactions are not allowed to perform any update actions, such as writing to a buffer block or writing a log record, while a checkpoint is in progress. We discuss how this requirement can be enforced in Section 19.5.2. The presence of a &lt; checkpoint L&gt; record in the log allows the system to stream-line its recovery procedure.  Consider a transaction T i that completed prior to the checkpoint. For such a transaction, the &lt; T i commit &gt; record (or &lt; T i abort &gt; record) appears in the log before the &lt; checkpoint &gt; record",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 16.668303009912922,
+            "page_number": [
+                1422,
+                1423,
+                1424
+            ]
+        },
+        {
+            "rank": 4,
+            "idx": 1206,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.6 Checkpoints Content: . For such a transaction, the &lt; T i commit &gt; record (or &lt; T i abort &gt; record) appears in the log before the &lt; checkpoint &gt; record. Any database modifications made by T i must have been written to the database either prior to the checkpoint or as part of the checkpoint itself. Thus, at recovery time, there is no need to perform a redo operation on T i . After a system crash has occurred, the system examines the log to find the last &lt; checkpoint L&gt; record (this can be done by searching the log backward, from the end of the log, until the first &lt; checkpoint L&gt; record is found). The redo or undo operations need to be applied only to transactions in L , and to all transactions that started execution after the &lt; checkpoint L&gt; record was written to the log. Let us denote this set of transactions as T . - For all transactions T k in T that have no &lt; T k commit &gt; record or &lt; T k abort &gt; record in the log, execute undo( T k ). - For all transactions T k in T such that either the record &lt; T k commit &gt; or the record &lt; T k abort &gt; appears in the log, execute redo( T k ). Note that we need only examine the part of the log starting with the last checkpoint log record to find the set of transactions T and to find out whether a commit or abort record occurs in the log for each transaction in T . As an illustration, consider the set of transactions { T 0 , T 1 ,..., T 100 }. Suppose that the most recent checkpoint took place during the execution of transaction T 67 and T 69 , while T 68 and all transactions with subscripts lower than 67 completed before the checkpoint. Thus, only transactions  Page 922 T 67 , T 69 ,..., T 100 need to be considered during the recovery scheme. Each of them needs to be redone if it has completed (i.e., either committed or aborted); otherwise, it was incomplete and needs to be undone. Consider the set of transactions L in a checkpoint log record",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.453016157032722e-05,
+            "page_number": [
+                1424,
+                1425
+            ]
+        },
+        {
+            "rank": 5,
+            "idx": 1183,
+            "chunk": "Description: Chapter 19 Section 19.1  Failure Classification Content: . Next, we must consider how these failure modes affect the contents of the database. We can then propose algorithms to ensure database consistency and transaction atomicity despite failures. These algorithms, known as recovery algorithms, have two parts: 1. Actions taken during normal transaction processing to ensure that enough information exists to allow recovery from failures. 2. Actions taken after a failure to recover the database contents to a state that ensures database consistency, transaction atomicity, and durability.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.413781843966825e-05,
+            "page_number": [
+                1404
+            ]
+        },
+        {
+            "rank": 6,
+            "idx": 1207,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.6 Checkpoints Content: . Consider the set of transactions L in a checkpoint log record. For each transaction T i in L , log records of the transaction that occur prior to the checkpoint log record may be needed to undo the transaction, in case it does not commit. However, all log records prior to the earliest of the &lt; T i start &gt; log records, among transactions T i in L , are not needed once the checkpoint has completed. These log records can be erased whenever the database system needs to reclaim the space occupied by these records. The requirement that transactions must not perform any updates to buffer blocks or to the log during checkpointing can be bothersome, since transaction processing has to halt while a checkpoint is in progress. A fuzzy checkpoint is a checkpoint where transactions are allowed to perform updates even while buffer blocks are being written out. Section 19.5.4 describes fuzzy-checkpointing schemes. Later in Section 19.9 we describe a checkpoint scheme that is not only fuzzy, but does not even require all modified buffer blocks to be output to disk at the time of the checkpoint.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.307219632900699e-05,
+            "page_number": [
+                1425
+            ]
+        },
+        {
+            "rank": 7,
+            "idx": 1218,
+            "chunk": "Description: Chapter 19 Section 19.5  Buffer Management Section 19.5.2 Database Buffering Content: In Section 19.2.2, we described the use of a two-level storage hierarchy. The system stores the database in nonvolatile storage (disk), and brings blocks of data into main memory as needed. Since main memory is typically much smaller than the entire database, it may be necessary to overwrite a block B 1 in main memory when another block B 2 needs to be brought into memory. If B 1 has been modified, B 1 must be output prior to the input of B 2 . As discussed in Section 13.5.1 this storage hierarchy is similar to the standard operating-system concept of virtual memory . One might expect that transactions would force-output all modified blocks to disk when they commit. Such a policy is called the force policy. The alternative, the no-force policy, allows a transaction to commit even if it has modified some blocks that have not yet been written back to disk. All the recovery algorithms described in this chapter work correctly even with the no-force policy. The no-force policy allows faster commit of transactions; moreover it allows multiple updates to accumulate on a block before it is output to stable storage, which can reduce the number of output operations greatly for frequently updated blocks. As a result, the standard approach taken by most systems is the noforce policy. Similarly, one might expect that blocks modified by a transaction that is still active should not be written to disk. This policy is called the no-steal policy. The alternative, the steal policy, allows the system to write modified blocks to disk even if the transactions that made those modifications have not all committed. As long as the write-ahead logging rule is followed, all the recovery algorithms we study in the chapter work correctly even with the steal policy. Further, the no-steal policy does not work with transactions that perform a large number of updates, since the buffer may get filled with updated pages that cannot be evicted to disk, and the transaction cannot then proceed",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.305772402073754e-05,
+            "page_number": [
+                1433
+            ]
+        },
+        {
+            "rank": 8,
+            "idx": 1191,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Content: Consider again our simplified banking system and a transaction Ti that transfers $50 from account A to account B, with initial values of A and B being $1000 and $2000, respectively. Suppose that a system crash has occurred during the execution of Ti , after output (B A ) has taken place, but before output (B B ) was executed, where B A and B B denote the buffer blocks on which A and B reside. Since the memory contents were lost, we do not know the fate of the transaction. When the system restarts, the value of A would be $950, while that of B would be $2000, which is clearly inconsistent with the atomicity requirement for transaction T i . Unfortunately, there is no way to find out by examining the database state what blocks had been output and what had not before the crash. It is possible that the transaction completed, updating the database on stable storage from an initial state with the values of A and B being $1000 and $1950; it is also possible that the transaction did not affect the stable storage at all, and the values of A and B were $950 and $2000 initially; or that the updated B was output  Page 913 but not the updated A ; or that the updated A was output but the updated B was not. Our goal is to perform either all or no database modifications made by T i . However, if T i performed multiple database modifications, several output operations may be required, and a failure may occur after some of these modifications have been made, but before all of them are made. To achieve our goal of atomicity, we must first output to stable storage information describing the modifications, without modifying the database itself. As we shall see, this information can help us ensure that all modifications performed by committed transactions are reflected in the database (perhaps during the course of recovery actions after a crash)",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 22.505342583932403,
+            "page_number": [
+                1410,
+                1411
+            ]
+        },
+        {
+            "rank": 9,
+            "idx": 1223,
+            "chunk": "Description: Chapter 19 Section 19.5  Buffer Management Section 19.5.4 Fuzzy Checkpointing Content: The checkpointing technique described in Section 19.3.6 requires that all updates to the database be temporarily suspended while the checkpoint is in progress. If the number of pages in the buffer is large, a checkpoint may take a long time to finish, which can result in an unacceptable interruption in processing of transactions. To avoid such interruptions, the checkpointing technique can be modified to permit updates to start once the checkpoint record has been written, but before the modified buffer blocks are written to disk. The checkpoint thus generated is a fuzzy checkpoint . Page 930  Since pages are output to disk only after the checkpoint record has been written, it is possible that the system could crash before all pages are written. Thus, a checkpoint on disk may be incomplete. One way to deal with incomplete checkpoints is this: The location in the log of the checkpoint record of the last completed checkpoint is stored in a fixed position, last-checkpoint, on disk. The system does not update this information when it writes the checkpoint record. Instead, before it writes the checkpoint record, it creates a list of all modified buffer blocks. The lastcheckpoint information is updated only after all buffer blocks in the list of modified buffer blocks have been output to disk. Even with fuzzy checkpointing, a buffer block must not be updated while it is being output to disk, although other buffer blocks may be updated concurrently. The write-ahead log protocol must be followed so that (undo) log records pertaining to a block are on stable storage before the block is output.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.737551764498353e-05,
+            "page_number": [
+                1438,
+                1439
+            ]
+        },
+        {
+            "rank": 10,
+            "idx": 1236,
+            "chunk": "Description: Chapter 19 Section 19.8  Early Lock Release and Logical Undo Operations Section 19.8.2 Logical Undo Log Records Content: . T o perform logical redo or undo, the database state on disk must be operation consistent , that is, it should not have partial effects of any operation. However, as we shall see, the physical redo processing in the redo phase of the recovery scheme, along with undo processing using physical log records, ensures that the parts of the database accessed by a logical undo operation are in an operation consistent state before the logical undo operation is performed. An operation is said to be idempotent if executing it several times in a row gives the same result as executing it once. Operations such as inserting an entry into a B + -tree may not be idempotent, and the recovery algorithm must therefore make sure that an operation that has already been performed is not performed again. On the other hand, a physical log record is idempotent, since the corresponding data item would have the same value regardless of whether the logged update is executed one or multiple times.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.721525870391652e-05,
+            "page_number": [
+                1450
+            ]
+        },
+        {
+            "rank": 11,
+            "idx": 1058,
+            "chunk": "Description: Chapter 17 Section 17.4  Transaction Atomicity and Durability Content: .  Handling external writes can be more complicated in some situations. For example, suppose the external action is that of dispensing cash at an automated teller machine, and the system fails just before the cash is actually dispensed (we assume that cash can be dispensed atomically). It makes no sense to dispense cash when the system is restarted, since the user may have left the machine. In such a case a compensating transaction, such as depositing the cash back into the user's account, needs to be executed when the system is restarted. As another example, consider a user making a booking over the web. It is possible that the database system or the application server crashes just after the booking transaction commits. It is also possible that the network connection to the user is lost just after the booking transaction commits. In either case, even though the transaction has committed, the external write has not taken place. T o handle such situations, the application must be designed such that when the user connects to the web application again, she will be able to see whether her transaction had succeeded or not. For certain applications, it may be desirable to allow active transactions to display data to users, particularly for longduration transactions that run for minutes or hours. Unfortunately, we cannot allow such output of observable data unless we are willing to compromise transaction atomicity.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.718134311119293e-05,
+            "page_number": [
+                1243
+            ]
+        },
+        {
+            "rank": 12,
+            "idx": 1463,
+            "chunk": "Description: Chapter 23 Section 23.2  Commit Protocols Section 23.2.1 Two-Phase Commit Section 23.2.1.3 Recovery and Concurrency Control Content: When a failed node restarts, we can perform recovery by using, for example, the recovery algorithm described in Section 19.4. T o deal with distributed commit protocols, the recovery procedure must treat in-doubt transactions specially; in-doubt transactions are transactions for which a &lt; ready T&gt; log record is found, but neither a &lt; commit T&gt; log record nor an &lt; abort T&gt; log record is found. The recovering node must determine the commit-abort status of such transactions by contacting other nodes, as described in Section 23.2.1.2. If recovery is done as just described, however, normal transaction processing at the node cannot begin until all indoubt transactions have been committed or rolled back. Finding the status of in-doubt transactions can be slow, since multiple nodes may have to be contacted. Further, if the coordinator has failed, and no other node has information about the commit-abort status of an incomplete transaction, recovery potentially could become blocked if 2PC is used. As a result, the node performing restart recovery may remain unusable for a long period. To circumvent this problem, recovery algorithms typically provide support for noting lock information in the log. (We are assuming here that locking is used for concurrency control.) Instead of writing a &lt; ready T&gt; log record, the algorithm writes a &lt; ready T , L &gt; log record, where L is a list of all write locks held by the transaction T when the log record is written. At recovery time, after performing local recovery actions, for every in-doubt transaction T , all the write locks noted in the &lt; ready T , L &gt; log record (read from the log) are reacquired. After lock reacquisition is complete for all in-doubt transactions, transaction processing can start at the node, even before the commit-abort status of the in-doubt transactions is determined",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 16.920760571038915,
+            "page_number": [
+                1718
+            ]
+        },
+        {
+            "rank": 13,
+            "idx": 1235,
+            "chunk": "Description: Chapter 19 Section 19.8  Early Lock Release and Logical Undo Operations Section 19.8.2 Logical Undo Log Records Content: To allow logical undo of operations, before an operation is performed to modify an index, the transaction creates a log record &lt; T i , O j , operation-begin &gt; , where Oj is a unique identifier for the operation instance. 5 While the system is executing the operation, it creates update log records in the normal fashion for all updates performed by the operation. Thus, the usual old-value and new-value information is written out as usual for each update performed by the operation; the old-value information is required in case the transaction needs to be rolled back before the operation completes. When the operation finishes, it writes an operation-end log record of the form &lt; T i , O j, operationend , U&gt;, where the U denotes undo information. For example, if the operation inserted an entry in a B + tree, the undo information U would indicate that a deletion operation is to be performed and would identify the B + -tree and what entry to delete from the tree. Such logging of information about operations is called logical logging . In contrast, logging of old-value and new-value information is called physical logging , and the corresponding log records are called physical log records . Note that in the above scheme, logical logging is used only for undo, not for redo; redo operations are performed exclusively using physical log record. This is because the  Page 937 state of the database after a system failure may reflect some updates of an operation and not other operations, depending on what buffer blocks had been written to disk before the failure. Data structures such as B + -trees would not be in a consistent state, and neither logical redo nor logical undo operations can be performed on an inconsistent data structure. T o perform logical redo or undo, the database state on disk must be operation consistent , that is, it should not have partial effects of any operation",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.636278903619325e-05,
+            "page_number": [
+                1449,
+                1450
+            ]
+        },
+        {
+            "rank": 14,
+            "idx": 1456,
+            "chunk": "Description: Chapter 23 Section 23.2  Commit Protocols Section 23.2.1 Two-Phase Commit Content: We first describe how the two-phase commit protocol (2PC) operates during normal operation, then describe how it handles failures and finally how it carries out recovery and concurrency control. Consider a transaction T initiated at node Ni , where the transaction coordinator is Ci , .",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.594246725801948e-05,
+            "page_number": [
+                1711
+            ]
+        },
+        {
+            "rank": 15,
+            "idx": 1204,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.5 Using the Log to Redo and Undo Transactions Content: . The operation redo( T 0 ) must be performed, since the log contains both the record &lt;T 0 start &gt; and the record &lt;T 0 commit &gt; . At the end of the entire recovery procedure, the values of accounts A , B , and C are $950, $2050, and $700, respectively. Finally, let us assume that the crash occurs just after the log record: ## &lt;T1 commit &gt; has been written to stable storage (Figure 19.4c). When the system comes back up, both T 0 and T 1 need to be redone, since the records &lt;T 0 start &gt; and &lt;T 0 commit &gt; appear in the log, as do the records &lt;T 1 start &gt; and &lt;T 1 commit &gt; . After the system performs the recovery procedures redo( T 0 ) and redo( T 1 ), the values in accounts A , B , and C are $950, $2050, and $600, respectively.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 8.073565856785466,
+            "page_number": [
+                1422
+            ]
+        }
+    ],
+    "full_response": "Deferred modification involves delaying the output of database blocks until after the transaction has committed. This approach is useful when the system is not guaranteed to crash before the transaction has completed its modifications. Immediate modification, on the other hand, outputs the modified blocks to stable storage as soon as the transaction commits. This approach is more efficient but requires the system to be crash-resistant.\n<<<ENDANSWER>>>\n\nDeferred modification is chosen when the system is not guaranteed to crash before the transaction has completed its modifications, while immediate modification is chosen when the system is crash-resistant.",
+    "faiss_only_idxs": [
+        1200,
+        1201,
+        1205,
+        1206,
+        1183,
+        1207,
+        1218,
+        1191,
+        1223,
+        1236,
+        1058,
+        1463,
+        1235,
+        1456,
+        1204
+    ],
+    "kg_only_idxs": [
+        1171
+    ],
+    "kg_added_chunks": [
+        {
+            "idx": 1171,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.10  Advanced Topics in Concurrency Control Section 18.10.3 Concurrency Control in Main-Memory Databases Content: . The function insert( ) shown in Figure 18.22 would"
+        }
+    ],
+    "faiss_only_chunks": [],
+    "is_contextualizing_query": true,
+    "contextualized_query": "What is the difference between deferred and immediate modification in recovery and when would you choose each?",
+    "original_query": "What is the difference between deferred and immediate modification in recovery and when would you choose each?",
+    "chat_history": [
+        {
+            "role": "user",
+            "content": "If a relation has a multivalued dependency that is not a functional dependency, which normal form does it violate and how do you decompose it?"
+        },
+        {
+            "role": "assistant",
+            "content": "The relation schema violates the BCNF (Boyce-Codd Normal Form) normal form. To decompose it, you can use the multivalued dependency to create a new schema that eliminates the redundancy caused by the multivalued dependency.\n\nFor example, consider a relation schema R with a multivalued dependency α ↠ β, where α ⊆ R and β ⊆ R. You can decompose R into two schemas R1 and R2 such that R1 satisfies the multivalued dependency α ↠ β and R2 is in BCNF.\n\nThe decomposition algorithm for 4NF (Fourth Normal Form) is similar to the BCNF decomposition algorithm, but it uses multivalued dependencies instead of functional dependencies. The algorithm involves finding the closure of the set of functional and multivalued dependencies on the relation schema, and then decomposing the schema into two schemas that satisfy the multivalued dependency and are in BCNF.\n\nThe key difference between BCNF and 4NF is that 4NF is more restrictive, as it requires that at least one of the following conditions holds: - α ↠ β is a trivial multivalued dependency. - α is a superkey for R. Therefore, a relation schema that violates the 4NF normal form will have a multivalued dependency that is not a trivial multivalued dependency or that is not a superkey for the schema."
+        }
+    ]
+}

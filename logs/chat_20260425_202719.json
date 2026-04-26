@@ -1,0 +1,342 @@
+{
+    "timestamp": "2026-04-25T20:27:19.799121",
+    "query": "How does normalization relate to transaction atomicity when updating redundant data?",
+    "chat_request_params": {
+        "system_prompt": "baseline",
+        "max_tokens": 400
+    },
+    "config_state": {
+        "chunk_mode": "recursive_sections",
+        "chunk_size": 2000,
+        "chunk_overlap": 200,
+        "top_k": 15,
+        "num_candidates": 75,
+        "embed_model": "models/Qwen3-Embedding-4B-Q5_K_M.gguf",
+        "ensemble_method": "rrf",
+        "rrf_k": 60,
+        "ranker_weights": {
+            "faiss": 0.7,
+            "bm25": 0,
+            "index_keywords": 0,
+            "kg": 0.3
+        },
+        "rerank_mode": "cross_encoder",
+        "rerank_top_k": 5,
+        "max_gen_tokens": 400,
+        "gen_model": "models/qwen2.5-1.5b-instruct-q5_k_m.gguf",
+        "system_prompt_mode": "baseline",
+        "disable_chunks": false,
+        "use_golden_chunks": false,
+        "output_mode": "terminal",
+        "metrics": [
+            "all"
+        ],
+        "use_hyde": false,
+        "hyde_max_tokens": 300,
+        "use_double_prompt": false,
+        "enable_history": true,
+        "max_history_turns": 3,
+        "use_indexed_chunks": false,
+        "extracted_index_path": "data/extracted_index.json",
+        "page_to_chunk_map_path": "index/sections/textbook_index_page_to_chunk_map.json",
+        "enable_topic_extraction": true
+    },
+    "top_k": 15,
+    "retrieved_chunks": [
+        {
+            "rank": 1,
+            "idx": 1059,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: Transaction-processing systems usually allow multiple transactions to run concurrently. Allowing multiple transactions to update data concurrently causes several complications with consistency of the data, as we saw earlier. Ensuring consistency in spite of concurrent execution of transactions requires extra work; it is far easier to insist that transactions run serially -that is, one at a time, each starting only after the previous one has completed. However, there are two good reasons for allowing concurrency:   - Improved throughput and resource utilization . A transaction consists of many steps. Some involve I/O activity; others involve CPU activity. The CPU and the disks in a computer system can operate in parallel. Therefore, I/O activity can be done in parallel with processing at the CPU. The parallelism of the CPU and the I/O system can therefore be exploited to run multiple transactions in parallel. While a read or write on behalf of one transaction is in progress on one disk, another transaction can be running in the CPU, while another disk may be executing a read or write on behalf of a third transaction. All of this increases the throughput of the system-that is, the number of transactions executed in a given amount of time. Correspondingly, the processor and disk utilization also increase; in other words, the processor and disk spend less time idle, or not performing any useful work. - Page 809 Reduced waiting time . There may be a mix of transactions running on a system, some short and some long. If transactions run serially, a short transaction may have to wait for a preceding long transaction to complete, which can lead to unpredictable delays in running a transaction. If the transactions are operating on different parts of the database, it is better to let them run concurrently, sharing the CPU cycles and disk accesses among them. Concurrent execution reduces the unpredictable delays in running transactions",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 1.000068491217406,
+            "page_number": [
+                1243,
+                1245
+            ]
+        },
+        {
+            "rank": 2,
+            "idx": 1063,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: . Indeed, the sum A + B is not preserved by the execution of the two transactions.  Figure 17.5 Schedule 4-a concurrent schedule resulting in an inconsistent state. If control of concurrent execution is left entirely to the operating system, many possible schedules, including ones that leave the database in an inconsistent state, such as the one just described, are possible. It is the job of the database system to ensure that any schedule that is executed will leave the database in a consistent state. The concurrencycontrol component of the database system carries out this task. We can ensure consistency of the database under concurrent execution by making sure that any schedule that is executed has the same effect as a schedule that could have occurred without any concurrent execution. That is, the schedule should, in some sense, be equivalent to a serial schedule. Such schedules are called serializable schedules.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 0.22232057178312203,
+            "page_number": [
+                1251
+            ]
+        },
+        {
+            "rank": 3,
+            "idx": 1207,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.6 Checkpoints Content: . Consider the set of transactions L in a checkpoint log record. For each transaction T i in L , log records of the transaction that occur prior to the checkpoint log record may be needed to undo the transaction, in case it does not commit. However, all log records prior to the earliest of the &lt; T i start &gt; log records, among transactions T i in L , are not needed once the checkpoint has completed. These log records can be erased whenever the database system needs to reclaim the space occupied by these records. The requirement that transactions must not perform any updates to buffer blocks or to the log during checkpointing can be bothersome, since transaction processing has to halt while a checkpoint is in progress. A fuzzy checkpoint is a checkpoint where transactions are allowed to perform updates even while buffer blocks are being written out. Section 19.5.4 describes fuzzy-checkpointing schemes. Later in Section 19.9 we describe a checkpoint scheme that is not only fuzzy, but does not even require all modified buffer blocks to be output to disk at the time of the checkpoint.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 13.330288186065701,
+            "page_number": [
+                1425
+            ]
+        },
+        {
+            "rank": 4,
+            "idx": 1191,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Content: Consider again our simplified banking system and a transaction Ti that transfers $50 from account A to account B, with initial values of A and B being $1000 and $2000, respectively. Suppose that a system crash has occurred during the execution of Ti , after output (B A ) has taken place, but before output (B B ) was executed, where B A and B B denote the buffer blocks on which A and B reside. Since the memory contents were lost, we do not know the fate of the transaction. When the system restarts, the value of A would be $950, while that of B would be $2000, which is clearly inconsistent with the atomicity requirement for transaction T i . Unfortunately, there is no way to find out by examining the database state what blocks had been output and what had not before the crash. It is possible that the transaction completed, updating the database on stable storage from an initial state with the values of A and B being $1000 and $1950; it is also possible that the transaction did not affect the stable storage at all, and the values of A and B were $950 and $2000 initially; or that the updated B was output  Page 913 but not the updated A ; or that the updated A was output but the updated B was not. Our goal is to perform either all or no database modifications made by T i . However, if T i performed multiple database modifications, several output operations may be required, and a failure may occur after some of these modifications have been made, but before all of them are made. To achieve our goal of atomicity, we must first output to stable storage information describing the modifications, without modifying the database itself. As we shall see, this information can help us ensure that all modifications performed by committed transactions are reflected in the database (perhaps during the course of recovery actions after a crash)",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 18.755735060364604,
+            "page_number": [
+                1410,
+                1411
+            ]
+        },
+        {
+            "rank": 5,
+            "idx": 1174,
+            "chunk": "Description: Chapter 18 Section 18.10  Advanced Topics in Concurrency Control Section 18.10.4 Long-Duration Transactions Content: The transaction concept developed initially in the context of data-processing applications, in which most transactions are noninteractive and of short duration. Serious problems arise when this concept is applied to database systems that involve human interaction. Such transactions have these key properties: - Long duration . Once a human interacts with an active transaction, that transaction becomes a long-duration transaction from the perspective of the computer, since human response time is slow relative to computer speed. Furthermore, in design applications, the human activity may involve hours, days, or an even longer period. Thus, transactions may be of long duration in human terms, as well as in machine terms. - Exposure of uncommitted data . Data generated and displayed to a user by a long-duration transaction are uncommitted, since the transaction may abort. Thus, users-and, as a result, other transactions-may be forced to read uncommitted data. If several users are cooperating on a project, user transactions may need to exchange data prior to transaction commit. - Subtasks . An interactive transaction may consist of a set of subtasks initiated by the user. The user may wish to abort a subtask without necessarily causing the entire transaction to abort. - Recoverability . It is unacceptable to abort a longduration interactive transaction because of a system crash. The active transaction must be recovered to a state that existed shortly before the crash so that relatively little human work is lost.  - Performance . Good performance in an interactive transaction system is defined as fast response time. This definition is in contrast to that in a noninteractive system, in which high throughput (number of transactions per second) is the goal. Systems with high throughput make efficient use of system resources. However, in the case of interactive transactions, the most costly resource is the user",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 1.000064012778551,
+            "page_number": [
+                1374,
+                1375
+            ]
+        },
+        {
+            "rank": 6,
+            "idx": 1058,
+            "chunk": "Description: Chapter 17 Section 17.4  Transaction Atomicity and Durability Content: .  Handling external writes can be more complicated in some situations. For example, suppose the external action is that of dispensing cash at an automated teller machine, and the system fails just before the cash is actually dispensed (we assume that cash can be dispensed atomically). It makes no sense to dispense cash when the system is restarted, since the user may have left the machine. In such a case a compensating transaction, such as depositing the cash back into the user's account, needs to be executed when the system is restarted. As another example, consider a user making a booking over the web. It is possible that the database system or the application server crashes just after the booking transaction commits. It is also possible that the network connection to the user is lost just after the booking transaction commits. In either case, even though the transaction has committed, the external write has not taken place. T o handle such situations, the application must be designed such that when the user connects to the web application again, she will be able to see whether her transaction had succeeded or not. For certain applications, it may be desirable to allow active transactions to display data to users, particularly for longduration transactions that run for minutes or hours. Unfortunately, we cannot allow such output of observable data unless we are willing to compromise transaction atomicity.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 15.81675472107601,
+            "page_number": [
+                1243
+            ]
+        },
+        {
+            "rank": 7,
+            "idx": 1056,
+            "chunk": "Description: Chapter 17 Section 17.4  Transaction Atomicity and Durability Content: . Therefore, the responsibility of writing and executing a compensating transaction is left to the user and is not handled by the database system. We need to be more precise about what we mean by successful completion of a transaction. We therefore establish a simple abstract transaction model. A transaction  must be in one of the following states: - Page 806 Active , the initial state; the transaction stays in this state while it is executing. - Partially committed , after the final statement has been executed. - Failed , after the discovery that normal execution can no longer proceed. - Aborted , after the transaction has been rolled back and the database has been restored to its state prior to the  start of the transaction. - Committed , after successful completion. The state diagram corresponding to a transaction appears in Figure 17.1. We say that a transaction has committed only if it has entered the committed state. Similarly, we say that a transaction has aborted only if it has entered the aborted state. A transaction is said to have terminated if it has either committed or aborted. Figure 17.1 State diagram of a transaction. A transaction starts in the active state. When it finishes its final statement, it enters the partially committed state. At this point, the transaction has completed its execution, but it is still possible that it may have to be aborted, since the actual output may still be temporarily residing in main memory, and thus a hardware failure may preclude its successful completion. The database system then writes out enough information to disk that, even in the event of a failure, the updates performed by the transaction can be re-created when the system restarts after the failure. When the last of this information is written out, the transaction enters the committed state.  As mentioned earlier, we assume for now that failures do not result in loss of data on disk",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 14.754329706985798,
+            "page_number": [
+                1239,
+                1240,
+                1241,
+                1242
+            ]
+        },
+        {
+            "rank": 8,
+            "idx": 1061,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: . The final values of accounts A and B , after the execution in Figure 17.2 takes place, are $855 and $2145, respectively. Thus, the total amount of money in accounts A and B -that is, the sum A + B -is preserved after the execution of both transactions.  Figure 17.2 Schedule 1-a serial schedule in which T 1 is followed by T 2 . Similarly, if the transactions are executed one at a time in the order T 2 followed by T 1 , then the corresponding execution sequence is that of Figure 17.3. Again, as expected, the sum A + B is preserved, and the final values of accounts A and B are $850 and $2150, respectively. Figure 17.3 Schedule 2-a serial schedule in which T 2 is followed by T 1 . The execution sequences just described are called schedules . They represent the chronological order in which instructions are executed in the system. Clearly, a schedule for a set of transactions must consist of all instructions of those transactions and they must preserve the order in which the instructions appear in each individual transaction. For example, in transaction T 1 , the instruction write( A ) must appear before the instruction read( B ), in any valid schedule. Note that we include in our schedules the commit operation to indicate that the transaction has entered the committed  Page 811 state. In the following discussion, we shall refer to the first execution sequence ( T 1 followed by T 2 ) as schedule 1, and to the second execution sequence ( T 2 followed by T 1 ) as schedule 2. These schedules are serial : Each serial schedule consists of a sequence of instructions from various transactions, where the instructions belonging to one single transaction appear together in that schedule. Recalling a well-known formula from combinatorics, we note that, for a set of n transactions, there exist n factorial ( n !) different valid serial schedules",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 8.079552026713019e-05,
+            "page_number": [
+                1247,
+                1248,
+                1249
+            ]
+        },
+        {
+            "rank": 9,
+            "idx": 432,
+            "chunk": "Description: Chapter 7 Section 7.8  Atomic Domains and First Normal Form Content: . Thus, our university schema can be considered to be in first normal form. The use of set-valued attributes can lead to designs with redundant storage of data, which in turn can result in inconsistencies. For instance, instead of having the relationship between instructors and sections being represented as a separate relation teaches, a database designer may be tempted to store a set of course section identifiers with each instructor and a set of instructor identifiers with each section. (The primary keys of section and instructor are used as identifiers.) Whenever data pertaining to which instructor teaches which section is changed, the update has to be performed at two places: in the set of instructors for the section, and in the set of sections for the instructor. Failure to perform both updates can leave the database in an inconsistent state. Keeping only one of these sets would avoid repeated information; however keeping only one of these would complicate some queries, and it is unclear which of the two it would be better to retain. Some types of non-atomic values can be useful, although they should be used with care. For example, compositevalued attributes are often useful, and set-valued attributes are also useful in many cases, which is why both are supported in the ER model. In many domains where entities have a complex structure, forcing a first normal form representation represents an unnecessary burden on the application programmer, who has to write code to convert data into atomic form. There is also the runtime overhead of   converting data back and forth from the atomic form. Support for non-atomic values can thus be very useful in such domains. In fact, modern database systems do support many types of non-atomic values, as we shall see in Chapter 29 restrict ourselves to relations in first normal form, and thus all domains are atomic.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 13.827295674116645,
+            "page_number": [
+                530,
+                532
+            ]
+        },
+        {
+            "rank": 10,
+            "idx": 1201,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.5 Using the Log to Redo and Undo Transactions Content: We now provide an overview of how the log can be used to recover from a system crash and to roll back transactions during normal operation. However, we postpone details of the procedures for failure recovery and rollback to Section 19.4. Consider our simplified banking system. Let T 0 be a transaction that transfers $50 from account A to account B : Let T 1 be a transaction that withdraws $100 from account C: The portion of the log containing the relevant information concerning these two transactions appears in Figure 19.2. Figure 19.2 Portion of the system log corresponding to T 0 and T 1 . Figure 19.3 shows one possible order in which the actual outputs took place in both the database system and the log  Page 918 as a result of the execution of T 0 and T 1 . 2 Figure 19.3 State of system log and database corresponding to T 0 and T 1 . Using the log, the system can handle any failure that does not result in the loss of information in non-volatile storage. The recovery scheme uses two recovery procedures. Both these procedures make use of the log to find the set of data items updated by each transaction T i and their respective old and new values. - redo ( T i ). The procedure sets the value of all data items updated by transaction T i to the new values. The order in which updates are carried out by redo is important; when recovering from a system crash, if updates to a particular data item are applied in an order different from the order in which they were applied originally, the final state of that data item will have a wrong value. Most recovery algorithms, including the one we describe in Section 19.4, do not perform redo of each transaction separately; instead they perform a single scan of the log, during which redo actions are performed for each log record as it is encountered. This approach ensures the order of updates is preserved, and it is more efficient since the log needs to be read only once overall, instead of once per transaction",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 16.875989009304686,
+            "page_number": [
+                1418,
+                1419
+            ]
+        },
+        {
+            "rank": 11,
+            "idx": 1060,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: . Concurrent execution reduces the unpredictable delays in running transactions. Moreover, it also reduces the average response time : the average time for a transaction to be completed after it has been submitted. The motivation for using concurrent execution in a database is essentially the same as the motivation for using multiprogramming in an operating system.  When several transactions run concurrently, the isolation property may be violated, resulting in database consistency being destroyed despite the correctness of each individual transaction. In this section, we present the concept of schedules to help identify those executions that are guaranteed to ensure the isolation property and thus database consistency. The database system must control the interaction among the concurrent transactions to prevent them from destroying the consistency of the database. It does so through a variety of mechanisms called concurrencycontrol schemes . We study concurrency-control schemes in Chapter 18; for now, we focus on the concept of correct concurrent execution. Consider again the simplified banking system of Section 17.1, which has several accounts, and a set of transactions that access and update those accounts. Let T 1 and T 2 be two transactions that transfer funds from one account to another. Transaction T 1 transfers $50 from account A to account B. It is defined as: Transaction T 2 transfers 10 percent of the balance from account A to account B . It is defined as:  Page 810 Suppose the current values of accounts A and B are $1000 and $2000, respectively. Suppose also that the two transactions are executed one at a time in the order T 1 followed by T 2 . This execution sequence appears in Figure 17.2. In the figure, the sequence of instruction steps is in chronological order from top to bottom, with instructions of T 1 appearing in the left column and instructions of T 2 appearing in the right column",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.626802670036362e-05,
+            "page_number": [
+                1245,
+                1246,
+                1247
+            ]
+        },
+        {
+            "rank": 12,
+            "idx": 403,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.4.3 Canonical Cover Content: Suppose that we have a set of functional dependencies F on a relation schema. Whenever a user performs an update on the relation, the database system must ensure that the update does not violate any functional dependencies, that is, all the functional dependencies in F are satisfied in the new database state. The system must roll back the update if it violates any functional dependencies in the set F . We can reduce the effort spent in checking for violations by testing a simplified set of functional dependencies that has the same closure as the given set. Any database that satisfies the simplified set of functional dependencies also satisfies the original set, and vice versa, since the two sets have the same closure. However, the simplified set is easier to test. We shall see how the simplified set can be constructed in a moment. First, we need some definitions. An attribute of a functional dependency is said to be extraneous if we can remove it without changing the closure of the set of functional dependencies. - Removing an attribute from the left side of a functional dependency could make it a stronger constraint. For example, if we have AB → C and remove B , we get the possibly stronger result A → C . It may be stronger because A → C logically implies AB → C, but AB → C does not, on its own, logically imply A → C . Page 325 But, depending on what our set F of functional dependencies happens to be, we may be able to remove B from AB → C safely. For example, suppose that the set F = { AB → C,A → D,D → C }. Then we can show that F logically implies A C , making B extraneous in AB → C .  - Removing an attribute from the right side of a functional dependency could make it a weaker constraint. For example, if we have AB → CD and remove C , we get the possibly weaker result AB → D. It may be weaker because using just AB → D, we can no longer infer AB → C",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.480107406745377e-05,
+            "page_number": [
+                503,
+                504
+            ]
+        },
+        {
+            "rank": 13,
+            "idx": 1183,
+            "chunk": "Description: Chapter 19 Section 19.1  Failure Classification Content: . Next, we must consider how these failure modes affect the contents of the database. We can then propose algorithms to ensure database consistency and transaction atomicity despite failures. These algorithms, known as recovery algorithms, have two parts: 1. Actions taken during normal transaction processing to ensure that enough information exists to allow recovery from failures. 2. Actions taken after a failure to recover the database contents to a state that ensures database consistency, transaction atomicity, and durability.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 17.522019567174368,
+            "page_number": [
+                1404
+            ]
+        },
+        {
+            "rank": 14,
+            "idx": 1090,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.1 Locks Content: . If these two transactions are executed serially, either in the order T 1 , T 2 or the order T 2 , T 1 , then transaction T 2 will display the value $300. If, however, these transactions are executed concurrently, then schedule 1, in Figure 18.4, is possible. In this case, transaction T 2 displays $250, which is incorrect. The reason for this mistake is that the transaction T 1 unlocked data item B too early, as a result of which T 2 saw an inconsistent state. Figure 18.4 Schedule 1. The schedule shows the actions executed by the transactions, as well as the points at which the concurrencycontrol manager grants the locks. The transaction making a lock request cannot execute its next action until the concurrency-control manager grants the lock. Hence, the lock must be granted in the interval of time between the lock-request operation and the following action of the transaction. Exactly when within this interval the lock is granted is not important; we can safely assume that the lock is granted just before the following action of the transaction. We shall therefore drop the column depicting the actions of the concurrency-control manager from all schedules depicted in the rest of the chapter. We let you infer when locks are granted.  Page 838 Suppose now that unlocking is delayed to the end of the transaction. Transaction T 3 corresponds to T 1 with unlocking delayed (Figure 18.5). Transaction T 4 corresponds to T 2 with unlocking delayed (Figure 18.6). Figure 18.5 Transaction T 3 (transaction T 1 with unlocking delayed).  Figure 18.6 Transaction T 4 (transaction T 2 with unlocking delayed). You should verify that the sequence of reads and writes in schedule 1, which lead to an incorrect total of $250 being displayed, is no longer possible with T 3 and T 4 . Other schedules are possible. T 4 will not print out an inconsistent result in any of them; we shall see why later",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 0.0005215067663155083,
+            "page_number": [
+                1290,
+                1291,
+                1292
+            ]
+        },
+        {
+            "rank": 15,
+            "idx": 438,
+            "chunk": "Description: Chapter 7 Section 7.9  Database-Design Process Section 7.9.3 Denormalization for Performance Content: Occasionally database designers choose a schema that has redundant information; that is, it is not normalized. They use the redundancy to improve performance for specific applications. The penalty paid for not using a normalized schema is the extra work (in terms of coding time and execution time) to keep redundant data consistent. For instance, suppose all course prerequisites have to be displayed along with the course information, every time a course is accessed. In our normalized schema, this requires a join of course with prereq. One alternative to computing the join on the fly is to store a relation containing all the attributes of course and prereq. This makes displaying the 'full' course information faster. However, the information for a course is repeated for every course prerequisite, and all copies must be updated by the application, whenever a course prerequisite is added or dropped. The process of taking a normalized schema and making it non-normalized is called denormalization , and designers use it to tune the performance of systems to support time-critical operations. A better alternative, supported by many database systems today, is to use the normalized schema and additionally store the join of course and prereq as a materialized view. (Recall that a materialized view is a view whose result is stored in the database and brought up to date when the relations used in the view are updated.) Like denormalization, using materialized views does have space and time overhead; however, it has the advantage that keeping the view up to date is the job of the database system, not the application programmer.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 13.58266966695105,
+            "page_number": [
+                536
+            ]
+        }
+    ],
+    "full_response": "Normalization and transaction atomicity are closely related in the context of database design and data management. When data is stored redundantly, it can lead to inconsistencies and make it difficult to ensure atomicity, which is the property that ensures that a transaction either completes successfully or fails completely without leaving any partial state.\n\nHere are some key points about the relationship between normalization and transaction atomicity:\n\n1. Redundant Data: When data is stored redundantly, it means that the same information is stored in multiple places. This redundancy can lead to inconsistencies because changes made to the data in one place may not be reflected in other places.\n\n2. Atomicity: Atomicity ensures that a transaction either completes successfully or fails completely without leaving any partial state. When data is stored redundantly, it becomes challenging to ensure that changes made in one place do not affect other places.\n\n3. Denormalization: Denormalization is a technique used to reduce redundancy and improve performance. However, it can lead to inconsistencies because it allows for multiple updates to the same data.\n\n4. Normalization: Normalization is a process that reduces redundancy and ensures that data is stored in a way that minimizes inconsistencies. By normalizing the data, we can ensure that changes made in one place are reflected in other places, thereby maintaining atomicity.\n\n5. Recovery Algorithms: Recovery algorithms are used to ensure database consistency and transaction atomicity despite failures. These algorithms use the log to find the set of data items updated by each transaction T_i and their respective old and new values.\n\n6. Redo and Undo: The log is used to redo and undo transactions. By using the log, the system can handle any failure that does not result in the loss of information in non-volatile storage.\n\nIn summary, normalization is crucial for ensuring transaction atomicity when updating redundant data. By normalizing the data, we can ensure that changes made in one place are reflected in other places, thereby maintaining atomicity. This is essential for maintaining the integrity",
+    "faiss_only_idxs": [
+        1191,
+        1058,
+        1056,
+        1061,
+        432,
+        1201,
+        1060,
+        403,
+        1183,
+        438,
+        1063,
+        1647,
+        1200,
+        1057,
+        1306
+    ],
+    "kg_only_idxs": [
+        1473,
+        3,
+        4,
+        1157,
+        1156,
+        9,
+        1450,
+        1167,
+        1171,
+        1140,
+        1045,
+        1181,
+        407,
+        1021,
+        1087
+    ],
+    "kg_added_chunks": [
+        {
+            "idx": 1473,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 23 Section 23.3  Concurrency Control in Distributed Databases Content: We now consider how the concurrency-control schemes discussed in Chapter 18 can be modified so that they can"
+        },
+        {
+            "idx": 3,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 1 Section 1.1 Database-System Applications Content: . - Online advertisements: For keeping records of click history to enable targeted advertisements, product suggestions, news ar"
+        },
+        {
+            "idx": 4,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 1 Section 1.1 Database-System Applications Content: . The user, or customer, can focus on the product or service without being aware of the details of the large database that make"
+        },
+        {
+            "idx": 1157,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.8  Snapshot Isolation Section 18.9.1 Degree-Two Consistency Content: . Such an update requires deletion of an entry corresponding to value v 1 from the index and ins"
+        },
+        {
+            "idx": 1156,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.8  Snapshot Isolation Section 18.9.1 Degree-Two Consistency Content: The purpose of degree-two consistency is to avoid cascading aborts without necessarily ensuring "
+        },
+        {
+            "idx": 9,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 1 Section 1.2 Purpose of Database Systems Content: . That is, the funds transfer must be atomic -it must happen in its entirety or not at all. It is difficult to ensure atomicity "
+        },
+        {
+            "idx": 1450,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 22 Section 22.9  Distributed Query Processing Section 22.9.4 Distributed Directory Systems Content: . In fact, several directory implementations use relational databases to store "
+        },
+        {
+            "idx": 1167,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.10  Advanced Topics in Concurrency Control Section 18.10.2 Concurrency in Index Structures Content: . The algorithms for lookup, insertion, and deletion are those us"
+        },
+        {
+            "idx": 1021,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 16 Section 16.5  Materialized Views Section 16.5.2 Incremental View Maintenance Section 16.5.2.1 Join Operation Content: Consider the materialized view v = r ⋈ s . Suppose we modi"
+        },
+        {
+            "idx": 1171,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.10  Advanced Topics in Concurrency Control Section 18.10.3 Concurrency Control in Main-Memory Databases Content: . The function insert( ) shown in Figure 18.22 would"
+        },
+        {
+            "idx": 1140,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.7  Multiversion Schemes Section 18.7.2 Multiversion Two-Phase Locking Content: The multiversion two-phase locking protocol attempts to combine the advantages of mult"
+        },
+        {
+            "idx": 1045,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 17 Section 17.1  Transaction Concept Content: Page 800 A transaction is a unit of program execution that accesses and possibly updates various data items. Usually, a transaction i"
+        },
+        {
+            "idx": 407,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.4.3 Canonical Cover Content: . However, it is incorrect to delete both! The algorithm for finding the canonical cover picks one of the two an"
+        },
+        {
+            "idx": 1181,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.10  Advanced Topics in Concurrency Control Section 18.10.6 Real-Time Transaction Systems Content: . Researchers have devoted considerable effort to concurrency contr"
+        },
+        {
+            "idx": 1087,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Content: One way to ensure isolation is to require that data items be accessed in a mutually exclusive manner; that is, while one transaction"
+        }
+    ],
+    "faiss_only_chunks": [
+        {
+            "idx": 1200,
+            "chunk": "Description: Chapter 19 Section 19.3  Recovery and Atomicity Section 19.3.3 Concurrency Control and Recovery Content: . Similarly, immediate modification of the database is a natural fit with two-phas"
+        },
+        {
+            "idx": 1057,
+            "chunk": "Description: Chapter 17 Section 17.4  Transaction Atomicity and Durability Content: .  As mentioned earlier, we assume for now that failures do not result in loss of data on disk. Chapter 19 discusses"
+        },
+        {
+            "idx": 1306,
+            "chunk": "Description: Chapter 20 Section 20.6  Transaction Processing in Parallel and Distributed Systems Content: Atomicity of transactions is an important issue in building a parallel and distributed databas"
+        },
+        {
+            "idx": 1647,
+            "chunk": "Description: Chapter 25 Section 25.1  Performance Tuning Section 25.1.7 Tuning of Concurrent Transactions Content: . However, for databases supporting web sites, there may be no such quiet period for "
+        }
+    ]
+}

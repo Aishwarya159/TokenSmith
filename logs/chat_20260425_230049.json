@@ -1,0 +1,248 @@
+{
+    "timestamp": "2026-04-25T23:00:49.682387",
+    "query": "How does a dirty read occur and what isolation level prevents it",
+    "chat_request_params": {
+        "system_prompt": "baseline",
+        "max_tokens": 400
+    },
+    "config_state": {
+        "chunk_mode": "recursive_sections",
+        "chunk_size": 2000,
+        "chunk_overlap": 200,
+        "top_k": 15,
+        "num_candidates": 75,
+        "embed_model": "models/Qwen3-Embedding-4B-Q5_K_M.gguf",
+        "ensemble_method": "rrf",
+        "rrf_k": 60,
+        "ranker_weights": {
+            "faiss": 0.7,
+            "bm25": 0,
+            "index_keywords": 0,
+            "kg": 0.3
+        },
+        "rerank_mode": "cross_encoder",
+        "rerank_top_k": 5,
+        "max_gen_tokens": 400,
+        "gen_model": "models/qwen2.5-1.5b-instruct-q5_k_m.gguf",
+        "system_prompt_mode": "baseline",
+        "disable_chunks": false,
+        "use_golden_chunks": false,
+        "output_mode": "terminal",
+        "metrics": [
+            "all"
+        ],
+        "use_hyde": false,
+        "hyde_max_tokens": 300,
+        "use_double_prompt": false,
+        "enable_history": true,
+        "max_history_turns": 3,
+        "use_indexed_chunks": false,
+        "extracted_index_path": "data/extracted_index.json",
+        "page_to_chunk_map_path": "index/sections/textbook_index_page_to_chunk_map.json",
+        "enable_topic_extraction": true
+    },
+    "top_k": 15,
+    "retrieved_chunks": [
+        {
+            "rank": 1,
+            "idx": 1062,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: . Recalling a well-known formula from combinatorics, we note that, for a set of n transactions, there exist n factorial ( n !) different valid serial schedules. When the database system executes several transactions concurrently, the corresponding schedule no longer needs to be serial. If two transactions are running concurrently, the operating system may execute one transaction for a little while, then perform a context switch, execute the second transaction for some time, and then switch back to the first transaction for some time, and so on. With multiple transactions, the CPU time is shared among all the transactions. Several execution sequences are possible, since the various instructions from both transactions may now be interleaved. In general, it is not possible to predict exactly how many instructions of a transaction will be executed before the CPU switches to another transaction. 1 Returning to our previous example, suppose that the two transactions are executed concurrently. One possible schedule appears in Figure 17.4. After this execution takes place, we arrive at the same state as the one in which the transactions are executed serially in the order T 1 followed by T A + B is indeed preserved. Page 812 2 . The sum  Figure 17.4 Schedule 3-a concurrent schedule equivalent to schedule 1. Not all concurrent executions result in a correct state. T o illustrate, consider the schedule of Figure 17.5. After the execution of this schedule, we arrive at a state where the final values of accounts A and B are $950 and $2100, respectively. This final state is an inconsistent state, since we have gained $50 in the process of the concurrent execution. Indeed, the sum A + B is not preserved by the execution of the two transactions.  Figure 17.5 Schedule 4-a concurrent schedule resulting in an inconsistent state",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.103552733681565e-05,
+            "page_number": [
+                1249,
+                1250,
+                1251
+            ]
+        },
+        {
+            "rank": 2,
+            "idx": 1646,
+            "chunk": "Description: Chapter 25 Section 25.1  Performance Tuning Section 25.1.7 Tuning of Concurrent Transactions Content: Page 1225 Concurrent execution of different types of transactions can sometimes lead to poor performance because of contention on locks. We first consider the case of read-write contention, which is more common, and then consider the case of write-write contention. As an example of read-write contention , consider the following situation on a banking database. During the day, numerous small update transactions are executed almost continuously. Suppose that a large query that computes statistics on branches is run at the same time. If the query performs a scan on a relation, it may block out all updates on the relation while it runs, and that can have a disastrous effect on the performance of the system. Several database systems-Oracle, PostgreSQL, and Microsoft SQL Server, for example-support snapshot isolation, whereby queries are executed on a snapshot of the data, and updates can go on concurrently. (Snapshot isolation is described in detail in Section 18.8.) Snapshot isolation should be used, if available, for large queries, to avoid lock contention in the above situation. In SQL Server, executing the statement ## set transaction isolation level snapshot at the beginning of a transaction results in snapshot isolation being used for that transaction. In Oracle and PostgreSQL, using the keyword serializable in place of the keyword snapshot in the above command has the same effect, since these systems actually use snapshot isolation (serializable snapshot isolation, in the case of PostgreSQL version 9.1 onwards) when the isolation level is set to serializable. If snapshot isolation is not available, an alternative option is to execute large queries at times when updates are few or  Page 1226 nonexistent. However, for databases supporting web sites, there may be no such quiet period for updates",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 18.362135428302167,
+            "page_number": [
+                1910,
+                1911
+            ]
+        },
+        {
+            "rank": 3,
+            "idx": 1061,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: . The final values of accounts A and B , after the execution in Figure 17.2 takes place, are $855 and $2145, respectively. Thus, the total amount of money in accounts A and B -that is, the sum A + B -is preserved after the execution of both transactions.  Figure 17.2 Schedule 1-a serial schedule in which T 1 is followed by T 2 . Similarly, if the transactions are executed one at a time in the order T 2 followed by T 1 , then the corresponding execution sequence is that of Figure 17.3. Again, as expected, the sum A + B is preserved, and the final values of accounts A and B are $850 and $2150, respectively. Figure 17.3 Schedule 2-a serial schedule in which T 2 is followed by T 1 . The execution sequences just described are called schedules . They represent the chronological order in which instructions are executed in the system. Clearly, a schedule for a set of transactions must consist of all instructions of those transactions and they must preserve the order in which the instructions appear in each individual transaction. For example, in transaction T 1 , the instruction write( A ) must appear before the instruction read( B ), in any valid schedule. Note that we include in our schedules the commit operation to indicate that the transaction has entered the committed  Page 811 state. In the following discussion, we shall refer to the first execution sequence ( T 1 followed by T 2 ) as schedule 1, and to the second execution sequence ( T 2 followed by T 1 ) as schedule 2. These schedules are serial : Each serial schedule consists of a sequence of instructions from various transactions, where the instructions belonging to one single transaction appear together in that schedule. Recalling a well-known formula from combinatorics, we note that, for a set of n transactions, there exist n factorial ( n !) different valid serial schedules",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.969156175386981e-05,
+            "page_number": [
+                1247,
+                1248,
+                1249
+            ]
+        },
+        {
+            "rank": 4,
+            "idx": 1063,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: . Indeed, the sum A + B is not preserved by the execution of the two transactions.  Figure 17.5 Schedule 4-a concurrent schedule resulting in an inconsistent state. If control of concurrent execution is left entirely to the operating system, many possible schedules, including ones that leave the database in an inconsistent state, such as the one just described, are possible. It is the job of the database system to ensure that any schedule that is executed will leave the database in a consistent state. The concurrencycontrol component of the database system carries out this task. We can ensure consistency of the database under concurrent execution by making sure that any schedule that is executed has the same effect as a schedule that could have occurred without any concurrent execution. That is, the schedule should, in some sense, be equivalent to a serial schedule. Such schedules are called serializable schedules.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.898483559714527e-05,
+            "page_number": [
+                1251
+            ]
+        },
+        {
+            "rank": 5,
+            "idx": 1060,
+            "chunk": "Description: Chapter 17 Section 17.5  Transaction Isolation Content: . Concurrent execution reduces the unpredictable delays in running transactions. Moreover, it also reduces the average response time : the average time for a transaction to be completed after it has been submitted. The motivation for using concurrent execution in a database is essentially the same as the motivation for using multiprogramming in an operating system.  When several transactions run concurrently, the isolation property may be violated, resulting in database consistency being destroyed despite the correctness of each individual transaction. In this section, we present the concept of schedules to help identify those executions that are guaranteed to ensure the isolation property and thus database consistency. The database system must control the interaction among the concurrent transactions to prevent them from destroying the consistency of the database. It does so through a variety of mechanisms called concurrencycontrol schemes . We study concurrency-control schemes in Chapter 18; for now, we focus on the concept of correct concurrent execution. Consider again the simplified banking system of Section 17.1, which has several accounts, and a set of transactions that access and update those accounts. Let T 1 and T 2 be two transactions that transfer funds from one account to another. Transaction T 1 transfers $50 from account A to account B. It is defined as: Transaction T 2 transfers 10 percent of the balance from account A to account B . It is defined as:  Page 810 Suppose the current values of accounts A and B are $1000 and $2000, respectively. Suppose also that the two transactions are executed one at a time in the order T 1 followed by T 2 . This execution sequence appears in Figure 17.2. In the figure, the sequence of instruction steps is in chronological order from top to bottom, with instructions of T 1 appearing in the left column and instructions of T 2 appearing in the right column",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 15.68070465179203,
+            "page_number": [
+                1245,
+                1246,
+                1247
+            ]
+        },
+        {
+            "rank": 6,
+            "idx": 1090,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.1 Locks Content: . If these two transactions are executed serially, either in the order T 1 , T 2 or the order T 2 , T 1 , then transaction T 2 will display the value $300. If, however, these transactions are executed concurrently, then schedule 1, in Figure 18.4, is possible. In this case, transaction T 2 displays $250, which is incorrect. The reason for this mistake is that the transaction T 1 unlocked data item B too early, as a result of which T 2 saw an inconsistent state. Figure 18.4 Schedule 1. The schedule shows the actions executed by the transactions, as well as the points at which the concurrencycontrol manager grants the locks. The transaction making a lock request cannot execute its next action until the concurrency-control manager grants the lock. Hence, the lock must be granted in the interval of time between the lock-request operation and the following action of the transaction. Exactly when within this interval the lock is granted is not important; we can safely assume that the lock is granted just before the following action of the transaction. We shall therefore drop the column depicting the actions of the concurrency-control manager from all schedules depicted in the rest of the chapter. We let you infer when locks are granted.  Page 838 Suppose now that unlocking is delayed to the end of the transaction. Transaction T 3 corresponds to T 1 with unlocking delayed (Figure 18.5). Transaction T 4 corresponds to T 2 with unlocking delayed (Figure 18.6). Figure 18.5 Transaction T 3 (transaction T 1 with unlocking delayed).  Figure 18.6 Transaction T 4 (transaction T 2 with unlocking delayed). You should verify that the sequence of reads and writes in schedule 1, which lead to an incorrect total of $250 being displayed, is no longer possible with T 3 and T 4 . Other schedules are possible. T 4 will not print out an inconsistent result in any of them; we shall see why later",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.576800004007737e-05,
+            "page_number": [
+                1290,
+                1291,
+                1292
+            ]
+        },
+        {
+            "rank": 7,
+            "idx": 1523,
+            "chunk": "Description: Chapter 23 Section 23.6  Replication with Weak Degrees of Consistency Section 23.6.2 Asynchronous Replication Content: . If a local replica has a version of the data item satisfying the freshness criterion, it can be used; otherwise, the read may have to be sent to the primary node. Consider, for example, an airline reservation site that shows the prices of multiple flight options. Prices may vary frequently, and the system does not guarantee that a user will actually be able to book a ticket at the price shown   Page 1137 initially . Thus, it is quite acceptable to show a price that is a few minutes old. Asynchronous replication is a good solution for this application: price data can be replicated to a large number of servers, which share the load of user queries; and price data are updated at a primary node and replicated asynchronously to all other replicas. Multiversion concurrency control schemes can be used to give a transaction-consistent snapshot of the database to read-only transactions that execute at a replica; that is, the transaction should see all updates of all transactions up to some transaction in the serialization order and should not see any updates of transactions later in the serialization order. The multiversion 2PL scheme, described in Section 23.5.1, can be extended to allow a read-only transaction to access a replica that may not have up-to-date versions of some data items, but still get a transaction-consistent snapshot view of the database. To do so, replicas must be aware of what is the latest timestamp t safe such that they have received all updates with commit timestamp before t . Any read of a snapshot with timestamp t &lt; t safe can be processed by that replica. Such a scheme is used in the Google Spanner database, Asynchronous replication is used in traditional (centralized) databases to create one or more replicas of the database, on which large queries can be executed, without interfering with transactions running on a primary node",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 10.863472421766867,
+            "page_number": [
+                1768,
+                1770
+            ]
+        },
+        {
+            "rank": 8,
+            "idx": 1132,
+            "chunk": "Description: Chapter 18 Section 18.6  Validation-Based Protocols Content: In cases where a majority of transactions are read-only transactions, the rate of conflicts among transactions may be low. Thus, many of these transactions, if executed without the supervision of a concurrency-control scheme, would nevertheless leave the system in a consistent state. A concurrency-control scheme imposes overhead of code execution and possible delay of transactions. It may be better to use an alternative scheme that imposes less overhead. A difficulty in reducing the overhead is that we do not know in advance which transactions will be involved in a conflict. T o gain that knowledge, we need a scheme for monitoring the system. The validation protocol requires that each transaction T i executes in two or three different phases in its lifetime, depending on whether it is a read-only or an update transaction. The phases are, in order: 1. Read phase . During this phase, the system executes transaction T i . It reads the values of the various data items and stores them in variables local to T i . It performs all write operations on temporary local variables, without updates of the actual database. 2. Validation phase . The validation test (described below) is applied to transaction T i . This determines whether - T i is allowed to proceed to the write phase without causing a  violation of serializability. If a transaction fails the validation test, the system aborts the transaction. 3. Write phase . If the validation test succeeds for transaction T i , the temporary local variables that hold the results of any write operations performed by T i are copied to the database. Read-only transactions omit this phase. Each transaction must go through the phases in the order shown. However, phases of concurrently executing transactions can be interleaved. To perform the validation test, we need to know when the various phases of transactions took place. We shall, therefore, associate three different timestamps with each transaction T i : 1",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.28994251705072e-05,
+            "page_number": [
+                1334,
+                1335
+            ]
+        },
+        {
+            "rank": 9,
+            "idx": 1088,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.1 Locks Content: There are various modes in which a data item may be locked. In this section, we restrict our attention to two modes: 1. Shared . If a transaction T i has obtained a sharedmode lock (denoted by S) on item Q, then T i can read, but cannot write, Q. 2. Exclusive . If a transaction T i has obtained an exclusive-mode lock (denoted by X) on item Q , then T i can both read and write Q . Page 836 We require that every transaction request a lock in an appropriate mode on data item Q , depending on the types of operations that it will perform on Q . The transaction makes the request to the concurrency-control manager. The transaction can proceed with the operation only after the concurrency-control manager grants the lock to the transaction. The use of these two lock modes allows multiple transactions to read a data item but limits write access to just one transaction at a time. To state this more generally, given a set of lock modes, we can define a compatibility function on them as follows: Let A and B represent arbitrary lock modes. Suppose that a transaction T i requests a lock of mode A on item Q on which transaction T j ( T i ≠ T j ) currently holds a lock of mode B . If transaction T i can be granted a lock on Q immediately, in spite of the presence of the mode B lock, then we say mode A is compatible with mode B . Such a function can be represented conveniently by a matrix. The compatibility relation between the two modes of locking discussed in this section appears in the matrix comp of Figure 18.1. An element comp( A, B ) of the matrix has the value true if and only if mode A is compatible with mode B .  Figure 18.1 Lock-compatibility matrix comp. Note that shared mode is compatible with shared mode, but not with exclusive mode. At any time, several sharedmode locks can be held simultaneously (by different transactions) on a particular data item",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.260311325771317e-05,
+            "page_number": [
+                1275,
+                1288
+            ]
+        },
+        {
+            "rank": 10,
+            "idx": 1647,
+            "chunk": "Description: Chapter 25 Section 25.1  Performance Tuning Section 25.1.7 Tuning of Concurrent Transactions Content: . However, for databases supporting web sites, there may be no such quiet period for updates. Another alternative is to use weaker levels of consistency, such as the read committed isolation level, whereby evaluation of the query has a minimal impact on concurrent updates, but the query results are not guaranteed to be consistent. The application semantics determine whether approximate (inconsistent) answers are acceptable. We now consider the case of write-write contention . Data items that are updated very frequently can result in poor performance with locking, with many transactions waiting for locks on those data items. Such data items are called update hot spots . Update hot spots can cause problems even with snapshot isolation, causing frequent transaction aborts due to write-validation failures. A commonly occurring situation that results in an update hot spot is as follows: transactions need to assign unique identifiers to data items being inserted into the database, and to do so they read and increment a sequence counter stored in a tuple in the database. If inserts are frequent, and the sequence counter is locked in a two-phase manner, the tuple containing the sequence counter becomes a hot spot. One way to improve concurrency is to release the lock on the sequence counter immediately after it is read and incremented; however, after doing so, even if the transaction aborts, the update to the sequence counter should not be rolled back. T o understand why, suppose T 1 increments the sequence counter, and then T 2 increments the sequence counter before T 1 commits; if T 1 then aborts, rolling back its update, either by restoring the counter to the original value or by decrementing the counter, will result in the sequence value used by T 2 getting reused by a subsequent transaction",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 17.00102027755876,
+            "page_number": [
+                1911
+            ]
+        },
+        {
+            "rank": 11,
+            "idx": 1133,
+            "chunk": "Description: Chapter 18 Section 18.6  Validation-Based Protocols Content: . To perform the validation test, we need to know when the various phases of transactions took place. We shall, therefore, associate three different timestamps with each transaction T i : 1. StartTS ( T i ), the time when T i started its execution. 2. ValidationTS ( T i ), the time when T i finished its read phase and started its validation phase. 3. FinishTS ( T i ), the time when T i finished its write phase. Page 867 ## Note 18.1 VIEW SERIALIZABILITY There is another form of equivalence that is less stringent than conflict equivalence, but that, like conflict equivalence, is based on only the read and write operations of transactions. Consider two schedules S and S', where the same set of transactions participates in both schedules. The schedules S and S' are said to be view equivalent if three conditions are met: 1. For each data item Q , if transaction T i reads the initial value of Q in schedule S , then transaction T i must, in schedule S', also read the initial value of Q .  2. For each data item Q , if transaction T i executes read( Q ) in schedule S , and if that value was produced by a write( Q ) operation executed by transaction T j , then the read( Q ) operation of transaction T i must, in schedule S', also read the value of Q that was produced by the same write( Q ) operation of transaction T j . 3. For each data item Q , the transaction (if any) that performs the final write( Q ) operation in schedule S must perform the final write( Q ) in schedule S'. Conditions 1 and 2 ensure that each transaction reads the same values in both schedules and, therefore, performs the same computation. Condition 3, coupled with conditions 1 and 2, ensures that both schedules result in the same final system state. The concept of view equivalence leads to the concept of view serializability. We say that a schedule S is view serializable if it is view equivalent to a serial schedule",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 6.149914126418812e-05,
+            "page_number": [
+                1335,
+                1336
+            ]
+        },
+        {
+            "rank": 12,
+            "idx": 1522,
+            "chunk": "Description: Chapter 23 Section 23.6  Replication with Weak Degrees of Consistency Section 23.6.2 Asynchronous Replication Content: Page 1136 Many relational database systems support replication with weak consistency, which can take one of several forms. With asynchronous replication the database allows updates at a primary node (also referred to as the master node) and propagates updates to replicas at other nodes subsequently; the transaction that performs the update can commit once the update is performed at the primary, even before replicas are updated. Propagation of updates after commit is also referred to as lazy propagation . In contrast, the term synchronous replication refers to the case where updates are propagated to other replicas as part of a single transaction. With asynchronous replication, the system must guarantee that once the transaction commits at the primary, the updates are eventually propagated to all replicas, even if there are system failures in between. Later in this section, we shall see how this property is guaranteed using persistent messaging. Since propagation of updates is done asynchronously, a read at a replica may not get the latest version of a data item. Asynchronous propagation of updates is commonly used to allow update transactions to commit quickly, even at the cost of consistency. A system designer may choose to use replicas only for fault tolerance. However, if the replica is available on a local machine, or another machine that can be accessed with low latency, it may be much cheaper to read the data item at the replica instead of reading it from the primary, as long as the application is willing to accept potentially stale data values. Data storage systems based on asynchronous replication may allow data items to have versions, with associated timestamps. A transaction may then request a version with required freshness properties, for example not more than 10 minutes old. If a local replica has a version of the data item satisfying the freshness criterion, it can be used; otherwise, the read may have to be sent to the primary node",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 9.051846966381175,
+            "page_number": [
+                1768
+            ]
+        },
+        {
+            "rank": 13,
+            "idx": 1091,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.1 Locks Content: . Other schedules are possible. T 4 will not print out an inconsistent result in any of them; we shall see why later. Page 839 Unfortunately, locking can lead to an undesirable situation. Consider the partial schedule of Figure 18.7 for T 3 and T 4 . Since T 3 is holding an exclusive-mode lock on B and T 4 is requesting a shared-mode lock on B , T 4 is waiting for T 3 to unlock B . Similarly, since T 4 is holding a shared-mode lock on A and T 3 is requesting an exclusivemode lock on A , T 3 is waiting for T 4 to unlock A . Thus, we have arrived at a state where neither of these transactions can ever proceed with its normal execution. This situation is called deadlock . When deadlock occurs, the system must roll back one of the two transactions. Once a transaction has been rolled back, the data items that were locked by that transaction are unlocked. These data items are then available to the other transaction, which can continue with its execution. We shall return to the issue of deadlock handling in Section 18.2. Figure 18.7 Schedule 2.  Page 840 If we do not use locking, or if we unlock data items too soon after reading or writing them, we may get inconsistent states. On the other hand, if we do not unlock a data item before requesting a lock on another data item, deadlocks may occur. There are ways to avoid deadlock in some situations, as we shall see in Section 18.1.5. However, in general, deadlocks are a necessary evil associated with locking, if we want to avoid inconsistent states. Deadlocks are definitely preferable to inconsistent states, since they can be handled by rolling back transactions, whereas inconsistent states may lead to real-world problems that cannot be handled by the database system. We shall require that each transaction in the system follow a set of rules, called a locking protocol , indicating when a transaction may lock and unlock each of the data items. Locking protocols restrict the number of possible schedules",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.996212080399835e-05,
+            "page_number": [
+                1292,
+                1293
+            ]
+        },
+        {
+            "rank": 14,
+            "idx": 1095,
+            "chunk": "Description: Chapter 18 Section 18.1  Lock-Based Protocols Section 18.1.3 The Two-Phase Locking Protocol Content: . Each transaction observes the two-phase locking protocol, but the failure of T 5 after the read(A) step of T 7 leads to cascading rollback of T 6 and T 7 . Figure 18.8 Partial schedule under two-phase locking. Cascading rollbacks can be avoided by a modification of two-phase locking called the strict two-phase locking protocol . This protocol requires not only that locking be two phase, but also that all exclusive-mode locks taken by a transaction be held until that transaction commits. This requirement ensures that any data written by an uncommitted transaction are locked in exclusive mode until the transaction commits, preventing any other transaction from reading the data.  Another variant of two-phase locking is the rigorous twophase locking protocol , which requires that all locks be held until the transaction commits. We can easily verify that, with rigorous two-phase locking, transactions can be serialized in the order in which they commit. Consider the following two transactions, for which we have shown only some of the significant read and write operations: T 8 : read( a 1 ); read( a 2 ); ... read(a n ); write( a 1 ). T 9 : read( a 1 ); read( a 2 ); display( a 1 + a 2 ). Page 843 If we employ the two-phase locking protocol, then T 8 must lock a 1 in exclusive mode. Therefore, any concurrent execution of both transactions amounts to a serial execution. Notice, however, that T 8 needs an exclusive lock on a 1 only at the end of its execution, when it writes a 1 . Thus, if T 8 could initially lock a 1 in shared mode, and then could later change the lock to exclusive mode, we could get more concurrency, since T 8 and T 9 could access a 1 and a 2 simultaneously. This observation leads us to a refinement of the basic twophase locking protocol, in which lock conversions are allowed. We shall provide a mechanism for upgrading a shared lock to an exclusive lock, and downgrading an exclusive lock to a shared lock",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 5.92308640927e-05,
+            "page_number": [
+                1296,
+                1297
+            ]
+        },
+        {
+            "rank": 15,
+            "idx": 613,
+            "chunk": "Description: Chapter 10 Section 10.2  Big Data Storage Systems Section 10.2.5 Replication and Consistency Content: . Application developers therefore typically use a combination of parallel key-value stores and databases. Some relations, such as those that store user account and user profile data are queried frequently, but with simple select queries on a key, typically on the user identifier. Such relations are stored in a parallel key-value store. In case select queries on other attributes are required, key-value stores that support indexing on attributes other than the primary key, such as MongoDB, could still be used. Other relations that are used in more complex queries are stored in a relational database that runs on a single server. Databases running on a single server do exploit the availability of multiple cores to execute transactions in parallel, but are limited by the number of cores that can be supported in a single machine. Most relational databases support a form of replication where update transactions run on only one database (the primary), but the updates are propagated to replicas of the database running on other servers. Applications can execute read only queries on these replicas, but with the understanding that they may see data that is a few seconds behind in time, as compared to the primary database. Offloading read-only queries from the primary database allows the system to handle a load larger than what a single database server can handle. In-memory caching systems, such as memcached or Redis, are also used to get scalable read-only access to relations stored in a database. Applications may store some relations, or some parts of some relations, in such an in-memory cache, which may be replicated or partitioned across multiple machines. Thereby, applications can get fast and scalable   read-only access to the cached data. Updates must however be performed on the database, and the application is responsible for updating the cache whenever the data is updated on the database. Page 483",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 9.410222166345886,
+            "page_number": [
+                738,
+                740
+            ]
+        }
+    ],
+    "full_response": "A dirty read occurs when a transaction reads data that has not yet been committed by another transaction. This can happen even with the serializable isolation level, which is designed to prevent dirty reads.\n\nThe isolation level prevents dirty reads by ensuring that transactions are executed in a way that guarantees that each transaction sees a consistent snapshot of the database. This means that transactions are executed in a way that prevents them from reading data that has not yet been committed by another transaction.\n\nIn other words, the isolation level ensures that each transaction sees a consistent view of the database, and that it does not read data that has been changed by another transaction. This prevents dirty reads, as each transaction sees a consistent snapshot of the database.\n\nThe isolation level is important because it ensures that transactions are executed in a way that prevents them from reading data that has not yet been committed by another transaction. This is important because it prevents transactions from reading data that has been changed by another transaction, which can lead to inconsistent results and data corruption.",
+    "faiss_only_idxs": [
+        1062,
+        1646,
+        1061,
+        1063,
+        1060,
+        1090,
+        1523,
+        1132,
+        1088,
+        1647,
+        1133,
+        1522,
+        1091,
+        1095,
+        613
+    ],
+    "kg_only_idxs": [
+        1051,
+        1621
+    ],
+    "kg_added_chunks": [
+        {
+            "idx": 1051,
+            "kg_score": 0.4444444444444444,
+            "chunk": "Description: Chapter 17 Section 17.2  A Simple Transaction Model Content: . We assume for now that a failure of the computer system may result in loss of data in main memory, but data written to disk "
+        },
+        {
+            "idx": 1621,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 25 Section 25.1  Performance Tuning Section 25.1.2 Location of Bottlenecks Content: . Figure 25.1 illustrates some of the queues in a database system. Note that each lockable item"
+        }
+    ],
+    "faiss_only_chunks": []
+}

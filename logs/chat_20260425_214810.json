@@ -1,0 +1,275 @@
+{
+    "timestamp": "2026-04-25T21:48:10.767039",
+    "query": "Why is a schema not in BCNF if a non-key attribute determines another non-key attribute?",
+    "chat_request_params": {
+        "system_prompt": "baseline",
+        "max_tokens": 400
+    },
+    "config_state": {
+        "chunk_mode": "recursive_sections",
+        "chunk_size": 2000,
+        "chunk_overlap": 200,
+        "top_k": 15,
+        "num_candidates": 75,
+        "embed_model": "models/Qwen3-Embedding-4B-Q5_K_M.gguf",
+        "ensemble_method": "rrf",
+        "rrf_k": 60,
+        "ranker_weights": {
+            "faiss": 0.7,
+            "bm25": 0,
+            "index_keywords": 0,
+            "kg": 0.3
+        },
+        "rerank_mode": "cross_encoder",
+        "rerank_top_k": 5,
+        "max_gen_tokens": 400,
+        "gen_model": "models/qwen2.5-1.5b-instruct-q5_k_m.gguf",
+        "system_prompt_mode": "baseline",
+        "disable_chunks": false,
+        "use_golden_chunks": false,
+        "output_mode": "terminal",
+        "metrics": [
+            "all"
+        ],
+        "use_hyde": false,
+        "hyde_max_tokens": 300,
+        "use_double_prompt": false,
+        "enable_history": true,
+        "max_history_turns": 3,
+        "use_indexed_chunks": false,
+        "extracted_index_path": "data/extracted_index.json",
+        "page_to_chunk_map_path": "index/sections/textbook_index_page_to_chunk_map.json",
+        "enable_topic_extraction": true
+    },
+    "top_k": 15,
+    "retrieved_chunks": [
+        {
+            "rank": 1,
+            "idx": 400,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.4.2 Closure of Attribute Sets Content: We say that an attribute B is functionally determined by α if α → β. T o test whether a set α is a superkey, we must devise an algorithm for computing the set of attributes functionally determined by α. One way of doing this is to compute F + , take all functional dependencies with a as the left-hand side, and take the union of the right-hand sides of all such dependencies. However, doing so can be expensive, since F + can be large. An efficient algorithm for computing the set of attributes functionally determined by a is useful not only for testing whether a is a superkey, but also for several other tasks, as we shall see later in this section.  Page 323 Let a be a set of attributes. We call the set of all attributes functionally determined by a under a set F of functional dependencies the closure of a under F ; we denote it by α + . Figure 7.8 shows an algorithm, written in pseudocode, to compute α + . The input is a set F of functional dependencies and the set α of attributes. The output is stored in the variable result . Figure 7.8 An algorithm to compute a+, the closure of a under F. To illustrate how the algorithm works, we shall use it to compute ( AG ) + with the functional dependencies defined in Section 7.4.1. We start with result = AG . The first time that we execute the repeat loop to test each functional dependency, we find that: - A → B causes us to include B in result. T o see this fact, we observe that A → B is in F , A ⊆ result (which is AG ), so result : = result ∪ B . - A → C causes result to become ABCG . - CG → H causes result to become ABCGH . - CG→ I causes result to become ABCGHI . The second time that we execute the repeat loop, no new attributes are added to result, and the algorithm terminates. Let us see why the algorithm of Figure 7.8 is correct. The first step is correct because α → α always holds (by the reflexivity rule). We claim that, for any subset β of result, α  Page 324 → β",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 23.41004695154659,
+            "page_number": [
+                500,
+                501,
+                502
+            ]
+        },
+        {
+            "rank": 2,
+            "idx": 393,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.3.3 Comparison of BCNF and 3NF Content: Of the two normal forms for relational database schemas, 3NF and BCNF there are advantages to 3NF in that we know that it is always possible to obtain a 3NF design without sacrificing losslessness or dependency preservation. Nevertheless, there are disadvantages to 3NF: We may have to use null values to represent some of the possible meaningful relationships among data items, and there is the problem of repetition of information. Our goals of database design with functional dependencies are: 1. BCNF. 2. Losslessness. 3. Dependency preservation. Since it is not always possible to satisfy all three, we may be forced to choose between BCNF and dependency preservation with 3NF. It is worth noting that SQL does not provide a way of specifying functional dependencies, except for the special  Page 319 case of declaring superkeys by using the primary key or unique constraints. It is possible, although a little complicated, to write assertions that enforce a functional dependency (see Practice Exercise 7.9); unfortunately, currently no database system supports the complex assertions that are required to enforce arbitrary functional dependencies, and the assertions would be expensive to test. Thus even if we had a dependency-preserving decomposition, if we use standard SQL we can test efficiently only those functional dependencies whose lefthand side is a key. Although testing functional dependencies may involve a join if the decomposition is not dependency preserving, if the database system supports materialized views, we could in principle reduce the cost by storing the join result as materialized view; however, this approach is feasible only if the database system supports primary key constraints or unique constraints on materialized views",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 24.135532993039284,
+            "page_number": [
+                493,
+                494
+            ]
+        },
+        {
+            "rank": 3,
+            "idx": 419,
+            "chunk": "Description: Chapter 7 Section 7.5  Algorithms for Decomposition Using Functional Dependencies Section 7.5.2 3NF Decomposition Content: . Sometimes, the result is not only in 3NF, but also in BCNF. This suggests an alternative method of generating a BCNF design. First use the 3NF algorithm. Then, for any schema in the 3NF design that is not in BCNF, decompose using the BCNF algorithm. If the result is not dependency-preserving, revert to the 3NF design.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 27.83804665616434,
+            "page_number": [
+                518
+            ]
+        },
+        {
+            "rank": 4,
+            "idx": 417,
+            "chunk": "Description: Chapter 7 Section 7.5  Algorithms for Decomposition Using Functional Dependencies Section 7.5.1 BCNF Decomposition Section 7.5.1.2 BCNF Decomposition Algorithm Content: . Thus, the decomposition of class results in the three relation schemas course, classroom, and section, each of which is in BCNF. These correspond to the schemas that we have used in this and previous chapters. You can verify that the decomposition is lossless and dependency preserving.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 11.305201982844501,
+            "page_number": [
+                516
+            ]
+        },
+        {
+            "rank": 5,
+            "idx": 403,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.4.3 Canonical Cover Content: Suppose that we have a set of functional dependencies F on a relation schema. Whenever a user performs an update on the relation, the database system must ensure that the update does not violate any functional dependencies, that is, all the functional dependencies in F are satisfied in the new database state. The system must roll back the update if it violates any functional dependencies in the set F . We can reduce the effort spent in checking for violations by testing a simplified set of functional dependencies that has the same closure as the given set. Any database that satisfies the simplified set of functional dependencies also satisfies the original set, and vice versa, since the two sets have the same closure. However, the simplified set is easier to test. We shall see how the simplified set can be constructed in a moment. First, we need some definitions. An attribute of a functional dependency is said to be extraneous if we can remove it without changing the closure of the set of functional dependencies. - Removing an attribute from the left side of a functional dependency could make it a stronger constraint. For example, if we have AB → C and remove B , we get the possibly stronger result A → C . It may be stronger because A → C logically implies AB → C, but AB → C does not, on its own, logically imply A → C . Page 325 But, depending on what our set F of functional dependencies happens to be, we may be able to remove B from AB → C safely. For example, suppose that the set F = { AB → C,A → D,D → C }. Then we can show that F logically implies A C , making B extraneous in AB → C .  - Removing an attribute from the right side of a functional dependency could make it a weaker constraint. For example, if we have AB → CD and remove C , we get the possibly weaker result AB → D. It may be weaker because using just AB → D, we can no longer infer AB → C",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 22.652437004486593,
+            "page_number": [
+                503,
+                504
+            ]
+        },
+        {
+            "rank": 6,
+            "idx": 392,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.3.2 Third Normal Form Content: . A dependency α → β that satisfies only the third alternative of the 3NF definition is not allowed in BCNF but is allowed in 3NF. 9 Now, let us again consider the schema for the dept\\_advisor relation, which has the following functional dependencies: i\\_ID → dept\\_name s\\_ID , dept\\_name → i\\_ID  Page 318 In Section 7.3.1.2, we argued that the functional dependency 'i\\_ID → depLname' caused the dept\\_advisor schema not to be in BCNF. Note that here α = i\\_ID, β = dept\\_name, and β - α = dept\\_name. Since the functional dependency s\\_ID , → dept\\_name i\\_ID holds on dept\\_advisor, the attribute dept\\_name is contained in a candidate key and, therefore, dept\\_advisor is in 3NF . We have seen the trade-off that must be made between BCNF and 3NF when there is no dependency-preserving BCNF design. These trade-offs are described in more detail in Section 7.3.3.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 28.722425203928395,
+            "page_number": [
+                492,
+                493
+            ]
+        },
+        {
+            "rank": 7,
+            "idx": 380,
+            "chunk": "Description: Chapter 7 Section 7.2  Decomposition Using Functional Dependencies Section 7.2.2 Keys and Functional Dependencies Content: . Figure 7.4 Sample instance of relation r .  Page 312 Some functional dependencies are said to be trivial because they are satisfied by all relations. For example, A → A is satisfied by all relations involving attribute A . Reading the definition of functional dependency literally, we see that, for all tuples t 1 and t 2 such that t 1 [ A ] = t 2 [ A ], it is the case that t 1 [ A ] = t 2 [ A ]. Similarly, AB → A is satisfied by all relations involving attribute A . In general, a functional dependency of the form α → β is trivial if β ⊆ α. It is important to realize that an instance of a relation may satisfy some functional dependencies that are not required to hold on the relation's schema. In the instance of the classroom relation of Figure 7.5, we see that room\\_number → capacity is satisfied. However, we believe that, in the real world, two classrooms in different buildings can have the same room number but with different room capacity. Thus, it is possible, at some time, to have an instance of the classroom relation in which room\\_number → capacity is not satisfied. So, we would not include room\\_number → capacity in the set of functional dependencies that hold on the schema for the classroom relation. However, we would expect the functional dependency building, room\\_number → capacity to hold on the classroom schema. Figure 7.5 An instance of the classroom relation. Because we assume that attribute names have only one meaning in the database schema, if we state that a functional dependency α → β holds as a constraint on the database, then for any schema R such that α ⊆ R and β ⊆ R , α → β must hold.  Given that a set of functional dependencies F holds on a relation r ( R ), it may be possible to infer that certain other functional dependencies must also hold on the relation",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 25.547105739395434,
+            "page_number": [
+                484,
+                485
+            ]
+        },
+        {
+            "rank": 8,
+            "idx": 418,
+            "chunk": "Description: Chapter 7 Section 7.5  Algorithms for Decomposition Using Functional Dependencies Section 7.5.2 3NF Decomposition Content: Figure 7.12 shows an algorithm for finding a dependencypreserving, lossless decomposition into 3NF. The set of dependencies F c used in the algorithm is a canonical cover for F . Note that the algorithm considers the set of schemas Rj , j = 1, 2,..., i ; initially i = 0, and in this case the set is empty.  Figure 7.12 Dependency-preserving, lossless decomposition into 3NF. Let us apply this algorithm to our example of dept\\_advisor from Section 7.3.2, where we showed that: <!-- formula-not-decoded --> is in 3NF even though it is not in BCNF. The algorithm uses the following functional dependencies in F : There are no extraneous attributes in any of the functional dependencies in F , so F c contains f 1 and f 2 . The algorithm then generates as R 1 the schema, ( i\\_ID dept\\_name), and as R 2 the schema ( S\\_ID , dept\\_name, i\\_ID). The algorithm then finds that R 2 contains a candidate key, so no further relation schema is created.  Page 334 The resultant set of schemas can contain redundant schemas, with one schema Rk containing all the attributes of another schema Rj . For example, R 2 above contains all the attributes from R 1 . The algorithm deletes all such schemas that are contained in another schema. Any dependencies that could be tested on an Rj that is deleted can also be tested on the corresponding relation Rk , and the decomposition is lossless even if Rj is deleted. Now let us consider again the schema of the class relation of Section 7.5.1.2 and apply the 3NF decomposition algorithm . The set of functional dependencies we listed there happen to be a canonical cover. As a result, the algorithm gives us the same three schemas course, classroom, and section. The preceding example illustrates an interesting property of the 3NF algorithm. Sometimes, the result is not only in 3NF, but also in BCNF. This suggests an alternative method of generating a BCNF design. First use the 3NF algorithm",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 27.59589133730769,
+            "page_number": [
+                516,
+                517,
+                518
+            ]
+        },
+        {
+            "rank": 9,
+            "idx": 405,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.4.3 Canonical Cover Content: . T o do so, compute γ + (the closure of γ) under F ; if γ + includes all attributes in β, then A is extraneous in α. For example, suppose F contains AB → CD, A → E , and E → C . T o check if C is extraneous in AB → CD, we compute the attribute closure of AB under F' = {AB → D, A → E, E → C }. The closure is ABCDE , which includes CD , so we infer that C is extraneous. Page 326 Having defined the concept of extraneous attributes, we can explain how we can construct a simplified set of functional dependencies equivalent to a given set of functional dependencies. A canonical cover F c for F is a set of dependencies such that F logically implies all dependencies in F c , and F c logically implies all dependencies in F . Furthermore, F c must have the following properties: - No functional dependency in F c contains an extraneous attribute. - Each left side of a functional dependency in F c is unique. That is, there are no two dependencies α 1 → β 1 and α 2 → β 2 in F c such that α 1 = α 2 . A canonical cover for a set of functional dependencies F can be computed as described in Figure 7.9. It is important to note that when checking if an attribute is extraneous, the check uses the dependencies in the current value of F c , and not the dependencies in F . If a functional dependency contains only one attribute in its right-hand side, for example A → C, and that attribute is found to be extraneous, we would get a functional dependency with an empty righthand side. Such functional dependencies should be deleted.  Figure 7.9 Computing canonical cover. Since the algorithm permits a choice of any extraneous attribute, it is possible that there may be several possible canonical covers for a given F . Any such F c is equally acceptable. Any canonical cover of F , F c , can be shown to have the same closure as F ; hence, testing whether F c is satisfied is equivalent to testing whether F is satisfied",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 22.674997407171418,
+            "page_number": [
+                505,
+                506
+            ]
+        },
+        {
+            "rank": 10,
+            "idx": 421,
+            "chunk": "Description: Chapter 7 Section 7.5  Algorithms for Decomposition Using Functional Dependencies Section 7.5.3 Correctness of the 3NF Algorithm Content: . - γ is not a superkey. Then α must contain some attribute not in γ. Now, since γ → B is in F + , it must be derivable from F c by using the attribute closure algorithm on γ. The derivation could not have used α → β, because if it had been used, a must be contained in the attribute closure of γ, which is not possible, since we assumed γ is not a superkey. Now, using α → (β - { B }) and γ → B , we can derive α → B (since γ ⊆ αβ, and γ cannot contain B because γ → B is nontrivial). This would imply that B is extraneous in the right-hand side of α → β, which is  - not possible since α → β is in the canonical cover F c . Thus, if B is in p, then γ must be a superkey, and the second condition of 3NF must be satisfied. - B is in a but not β. Since α is a candidate key, the third alternative in the definition of 3NF is satisfied. Interestingly, the algorithm we described for decomposition into 3NF can be implemented in polynomial time, even though testing a given schema to see if it satisfies 3NF is NP-hard (which means that it is very unlikely that a polynomial-time algorithm will ever be invented for this task). Page 336",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 26.229604589596924,
+            "page_number": [
+                519,
+                520
+            ]
+        },
+        {
+            "rank": 11,
+            "idx": 394,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.3.3 Comparison of BCNF and 3NF Content: . On the negative side, there is a space and time overhead due to the materialized view, but on the positive side, the application programmer need not worry about writing code to keep redundant data consistent on updates; it is the job of the database system to maintain the materialized view, that is, keep it up to date when the database is updated. (In Section 16.5, we outline how a database system can perform materialized view maintenance efficiently.) Unfortunately, most current database systems limit constraints on materialized views or do not support them at all. Even if such constraints are allowed, there is an additional requirement: the database must update the view and check the constraint immediately (as part of the same transaction) when an underlying relation is updated. Otherwise, a constraint violation may get detected well after the update has been performed and the transaction that caused the violation has committed.  In summary, even if we are not able to get a dependencypreserving BCNF decomposition, it is still preferable to opt for BCNF, since checking functional dependencies other than primary key constraints is difficult in SQL.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 24.03289698989929,
+            "page_number": [
+                494,
+                495
+            ]
+        },
+        {
+            "rank": 12,
+            "idx": 422,
+            "chunk": "Description: Chapter 7 Section 7.6  Decomposition Using Multivalued Dependencies Content: Some relation schemas, even though they are in BCNF, do not seem to be sufficiently normalized, in the sense that they still suffer from the problem of repetition of information. Consider a variation of the university organization where an instructor may be associated with multiple departments, and we have a relation: inst ( ID , dept\\_name, name, street, city ) The astute reader will recognize this schema as a nonBCNF schema because of the functional dependency ID → name, street, city and because ID is not a key for inst . addresses (say, a winter home and a summer home). Then, Further assume that an instructor may have several we no longer wish to enforce the functional dependency 'ID→ street, city', though, we still want to enforce ' ID → name' (i.e., the university is not dealing with instructors who operate under multiple aliases!). Following the BCNF decomposition algorithm, we obtain two schemas:  ``` r 1 ( ID , name ) r 2 ( ID , dept_name, street, city ) ``` Both of these are in BCNF (recall that an instructor can be associated with multiple departments and a department may have several instructors, and therefore, neither ' ID → dept\\_name' nor 'dept\\_name → ID' hold). Despite r 2 being in BCNF, there is redundancy. We repeat the address information of each residence of an instructor once for each department with which the instructor is associated. We could solve this problem by decomposing r 2 further into: but there is no constraint that leads us to do this. To deal with this problem, we must define a new form of constraint, called a multivalued dependency. As we did for functional dependencies, we shall use multivalued dependencies to define a normal form for relation schemas. This normal form, called fourth normal form (4NF), is more restrictive than BCNF. We shall see that every 4NF schema is also in BCNF but there are BCNF schemas that are not in 4NF.",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 26.44719331696707,
+            "page_number": [
+                520,
+                521
+            ]
+        },
+        {
+            "rank": 13,
+            "idx": 398,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.4.1 Closure of a Set of Functional Dependencies Content: . Axioms , or rules of inference, provide a simpler technique for reasoning about functional dependencies. In the rules that follow, we use Greek letters (α, β, γ,...) for sets of attributes and uppercase Roman letters from the beginning of the alphabet for individual attributes. We use αβ to denote α ∪ β. We can use the following three rules to find logically implied functional dependencies. By applying these rules repeatedly, we can find all of F + , given F . This collection of rules is called Armstrong's axioms in honor of the person who first proposed it.  - Reflexivity rule . If α is a set of attributes and β ⊆ α, then α → β holds. - Augmentation rule . If α → β holds and γ is a set of attributes, then γα → γß holds. - Transitivity rule . If α → β holds and β → γ holds, then α → γ holds. Armstrong's axioms are sound , because they do not generate any incorrect functional dependencies. They are complete , because, for a given set F of functional dependencies, they allow us to generate all F + . The Further Reading section provides references for proofs of soundness and completeness. Although Armstrong's axioms are complete, it is tiresome to use them directly for the computation of F + . T o simplify matters further, we list additional rules. It is possible to use Armstrong's axioms to prove that these rules are sound (see Practice Exercise 7.4, Practice Exercise 7.5, and Exercise 7.27).  - Union rule . If α → β holds and α → γ holds, then α → βγ holds. - Decomposition rule . If α → βγ holds, then α → β holds and α → γ holds. - Pseudotransitivity rule . If α → β holds and γβ → δ holds, then αγ → δ holds. Let us apply our rules to the example of schema R = ( A , B, C , G, H , I ) and the set F of functional dependencies { A → B,A → C , CG → H , CG → I , B → H }. We list several members of F + here: - A → H . Since A → B and B → H hold, we apply the transitivity rule",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.398481490574378e-05,
+            "page_number": [
+                497,
+                498,
+                499
+            ]
+        },
+        {
+            "rank": 14,
+            "idx": 303,
+            "chunk": "Description: Chapter 6 Section 6.3  Complex Attributes Content: Page 250 For each attribute, there is a set of permitted values, called the domain , or value set , of that attribute. The domain of attribute course\\_id might be the set of all text strings of a certain length. Similarly, the domain of attribute semester might be strings from the set {Fall, Winter, Spring, Summer}. An attribute, as used in the E-R model, can be characterized by the following attribute types. - Simple and composite attributes. In our examples thus far, the attributes have been simple ; that is, they have not been divided into subparts. Composite attributes, on the other hand, can be divided into subparts (i.e., other attributes). For example, an attribute name could be structured as a composite attribute consisting of  - first\\_name , middle\\_initial , and last\\_name . Using composite attributes in a design schema is a good choice if a user will wish to refer to an entire attribute on some occasions, and to only a component of the attribute on other occasions. Suppose we were to add an address to the student entity-set. The address can be defined as the composite attribute address with the attributes street , city , state , and postal\\_code . 1 Composite attributes help us to group together related attributes, making the modeling cleaner. Page 251 Note also that a composite attribute may appear as a hierarchy. In the composite attribute address , its component attribute street can be further divided into street\\_number , street\\_name , and apartment\\_number . Figure 6.7 depicts these examples of composite attributes for the instructor entity set. - Single-valued and multivalued attributes. The attributes in our examples all have a single value for a particular entity. For instance, the student\\_ID attribute for a specific student entity refers to only one student ID . Such attributes are said to be single valued . There may be instances where an attribute has a set of values for a specific entity",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 22.982656309297848,
+            "page_number": [
+                393,
+                394
+            ]
+        },
+        {
+            "rank": 15,
+            "idx": 381,
+            "chunk": "Description: Chapter 7 Section 7.2  Decomposition Using Functional Dependencies Section 7.2.2 Keys and Functional Dependencies Content: .  Given that a set of functional dependencies F holds on a relation r ( R ), it may be possible to infer that certain other functional dependencies must also hold on the relation. For example, given a schema r(A, B, C ), if functional dependencies A → B and B → C hold on r , we can infer the functional dependency A → C must also hold on r . This is because, given any value of A , there can be only one corresponding value for B , and for that value of B , there can only be one corresponding value for C . We study in Section 7.4.1, how to make such inferences. We shall use the notation F + to denote the closure of the set F , that is, the set of all functional dependencies that can be inferred given the set F . F + contains all of the functional dependencies in F .",
+            "source": "data/silberschatz--extracted_markdown.md",
+            "score": 7.34146539233931e-05,
+            "page_number": [
+                485
+            ]
+        }
+    ],
+    "full_response": "A schema is not in BCNF if a non-key attribute determines another non-key attribute because it violates the third normal form (3NF) definition. According to the 3NF definition, a dependency α → β is allowed if it satisfies the third alternative of the 3NF definition, which means that β is not a proper subset of α. If a non-key attribute determines another non-key attribute, then β is a proper subset of α, and the dependency α → β is not allowed in BCNF. Therefore, a schema that violates the third alternative of the 3NF definition is not in BCNF.",
+    "faiss_only_idxs": [
+        393,
+        419,
+        417,
+        403,
+        392,
+        380,
+        418,
+        405,
+        421,
+        394,
+        422,
+        398,
+        303,
+        381,
+        420
+    ],
+    "kg_only_idxs": [
+        400
+    ],
+    "kg_added_chunks": [
+        {
+            "idx": 400,
+            "kg_score": 1.0,
+            "chunk": "Description: Chapter 7 Section 7.3  Normal Forms Section 7.4.2 Closure of Attribute Sets Content: We say that an attribute B is functionally determined by α if α → β. T o test whether a set α is a sup"
+        }
+    ],
+    "faiss_only_chunks": [
+        {
+            "idx": 420,
+            "chunk": "Description: Chapter 7 Section 7.5  Algorithms for Decomposition Using Functional Dependencies Section 7.5.3 Correctness of the 3NF Algorithm Content: Page 335 The 3NF algorithm ensures the preservati"
+        }
+    ],
+    "is_contextualizing_query": true,
+    "contextualized_query": "Why is a schema not in BCNF if a non-key attribute determines another non-key attribute?",
+    "original_query": "Why is a schema not in BCNF if a non-key attribute determines another non-key attribute?",
+    "chat_history": [
+        {
+            "role": "user",
+            "content": "How does normalization relate to transaction atomicity when updating redundant data?"
+        },
+        {
+            "role": "assistant",
+            "content": "Normalization is the process of organizing data in a database to ensure that it is consistent and can be easily updated. When updating redundant data, normalization can lead to inconsistencies if not handled properly. For example, if a course prerequisite is stored redundantly in two different tables, updating one table will not automatically update the other, leading to inconsistencies. To avoid these inconsistencies, normalization can be used to ensure that all redundant data is stored in a single table, making it easier to update and maintain. However, this can also lead to increased runtime overhead and complexity in the application code. Therefore, normalization can be a trade-off between consistency and performance, and the choice of normalization depends on the specific requirements of the application and the database system being used."
+        },
+        {
+            "role": "user",
+            "content": "Why does denormalization increase the need for strict transaction atomicity and recovery mechanisms?"
+        },
+        {
+            "role": "assistant",
+            "content": "Denormalization increases the need for strict transaction atomicity and recovery mechanisms because it can lead to data inconsistencies if not properly managed. When data is denormalized, it can become more difficult to ensure that all changes made by a transaction are applied consistently and correctly. This is because denormalization can introduce redundancy and make it more challenging to track changes and ensure that they are applied in the correct order. As a result, strict transaction atomicity and recovery mechanisms are needed to ensure that data is updated correctly and that transactions are rolled back or committed properly in the event of a failure."
+        },
+        {
+            "role": "user",
+            "content": "Which normalization form is violated when a non-key attribute depends on another non-key attribute?"
+        },
+        {
+            "role": "assistant",
+            "content": "Fourth Normal Form (4NF) is violated when a non-key attribute depends on another non-key attribute. This means that the relation schema is not in a desirable normal form because it contains a non-trivial functional dependency that cannot be satisfied by the primary key alone. In other words, the non-key attribute is not independent of the primary key, and this dependency cannot be eliminated by further normalization."
+        }
+    ]
+}
