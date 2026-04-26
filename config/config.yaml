@@ -1,6 +1,6 @@
 embed_model: "models/Qwen3-Embedding-4B-Q5_K_M.gguf"
-top_k: 10
-num_candidates: 50
+top_k: 15
+num_candidates: 75
 ensemble_method: "rrf"
 ranker_weights: {"faiss":0.7,"bm25":0,"index_keywords":0, "kg":0.3}
 rrf_k: 60

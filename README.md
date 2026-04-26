@@ -1,3 +1,17 @@
+# Knowledge Graph
+To generate Knowledge graph run the following command from the conda environment in the root directory after you already generate chunks and have them in the index/sections
+$python extract_kg.py \
+  --index_dir index/sections/ \
+  --output    index/sections/textbook_index_kg.json \
+  --model_path models/qwen2.5-1.5b-instruct-q5_k_m.gguf \
+  --resume
+This generates KG using the mentioned model. It has checkpoints so that you can easily resume from a crash.
+The final generated graph is already present in the above path, so you can directly use it as genration can take 2-3 hours.
+
+To run a the chat with KG enabled multihop reasoning run the below command after you populate the index section with chunks required for FAISS as well:
+$ python -m src.main chat --multihop
+
+The logging has been updated to see what are the chunks added by KG and what are chunks based purely on FAISS in addition to the existing information. Some previously used query logs are present in the log directory.
 # TokenSmith
 
 **TokenSmith** is a local-first database system for students to query textbooks, lecture slides, and notes and get fast, cited answers on their own machines using local LLMs. It is based on retrieval augmented generation (RAG) and applies database-inspired principles like indexing, latency-focused querying, caching, and incremental builds, to optimize the ingestion -> retrieval -> generation pipeline.
